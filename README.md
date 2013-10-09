@@ -1,4 +1,4 @@
 deployment
 ==========
 
-Cluster deployment helper scirpts
+Cluster deployment helper scripts
