@@ -89,7 +89,7 @@ if [ $# -ne 3 ];then
     exit 1
 fi
 # Must have chosen either -s or -p
-if [ "$installation" != "s" -a "$installation" != "p" ];then
+if [ "${installation}" != "s" -a "${installation}" != "p" ];then
     echo "ERROR: Unknown installation type."
     echo "       You need to pick SciDB with or without P4."
     echo "       [-s|-p credentials]"
@@ -97,7 +97,7 @@ if [ "$installation" != "s" -a "$installation" != "p" ];then
     exit 1
 fi
 # CREDENTIALS
-if [ "installation" = "p" ];then
+if [ "${installation}" = "p" ];then
     if [ ! -f "${credentials}" ];then
 	echo "ERROR: Credentials '${credentials}' is not readable."
 	print_usage
@@ -170,7 +170,7 @@ echo '******************************************'
 echo
 sleep ${NAPTIME}
 SCIDB_VERSION=13.9 ${here}/deploy.sh scidb_install_release 13.9 `cat $hostlist`
-if [ "installation" = "p" ];then
+if [ "${installation}" = "p" ];then
     echo
     echo '***************************************'
     echo '* Installing P4 to the cluster hosts. *'
