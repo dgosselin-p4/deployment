@@ -25,3 +25,5 @@ Configfile is the SciDB configuration file for the cluster.
 Either write your own
 or use our new online tool called configurator that provides assistance selecting and building the initialization parameters file, config.ini.
 See https://github.com/paradigm4/configurator.
+
+NOTE: At this time the user on each host that runs SciDB is hardcoded to "scidb".
