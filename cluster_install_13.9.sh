@@ -37,7 +37,6 @@ function print_usage ()
 {
     echo ""
     echo "${0} [-s|-p <credentials>] <hostlist> <network> <configfile>"
-    echo "  [-s|-p credentials]"
     echo "  -s         - if installing SciDB without P4"
     echo "  -p <credentials>"
     echo "             - if installing SciDB with P4"
