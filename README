@@ -1,4 +1,20 @@
-deployment
-==========
+cluster_install_13.9.sh
+=======================
 
-Cluster deployment helper scripts
+This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version 13.9 cluster from a single machine.
+
+./cluster_install_13.9.sh [-s|-p <credentials>] <hostlist> <network> <configfile>
+  [-s|-p credentials]
+  -s         - if installing SciDB without P4
+  -p <credentials>
+             - if installing SciDB with P4
+               <credentials> is a file with one line of the credentials (<username>:<password>) to access the P4 downloads.
+  hostlist   - a file listing the hosts in the cluster
+             - the first line is the coordinator
+  network    - is the network mask the cluster is on
+  configfile - SciDB configuration file
+
+Read the SECURITY file to see what security issues this script will cause.
+
+This tool is provided as is with no support.
+Use at your own risk.
