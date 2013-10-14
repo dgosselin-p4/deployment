@@ -131,6 +131,7 @@ fi
 shift
 ################################################################
 # Read configuration file to get the name of the database
+# Find line of "[database]" and extract name within the brackets
 #
 database=""
 database="`grep -E '^\[.*\]$' ${config_file} | sed -e 's/\[//' -e 's/\]//'`"

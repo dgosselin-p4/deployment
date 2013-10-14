@@ -24,8 +24,8 @@ set -eu
 
 function print_usage()
 {
-echo <<EOF
-"USAGE
+cat <<EOF
+USAGE
   deploy.sh usage - print this usage
   deploy.sh help  - print verbose help
 
@@ -58,7 +58,7 @@ SciDB control on remote machines:
                              <database>
                              <coordinator-host> [host ...]
   deploy.sh scidb_start      <scidb_os_user> <database> <coordinator-host>
-  deploy.sh scidb_stop       <scidb_os_user> <database> <coordinator-host>"
+  deploy.sh scidb_stop       <scidb_os_user> <database> <coordinator-host>
 EOF
 echo
 }
@@ -72,8 +72,8 @@ exit ${1}
 function print_example ()
 {
 echo
-echo <<EOF
-"EXAMPLE
+cat <<EOF
+EXAMPLE
 Using deploy.sh to set up a development/test environment on local machine (localhost).
 
 1) Password-less ssh access from localhost to localhost:
@@ -110,7 +110,7 @@ make
 
 7) Start SciDB:
 
-./deploy.sh scidb_start my_username mydb localhost"
+./deploy.sh scidb_start my_username mydb localhost
 EOF
 echo
 }
@@ -119,8 +119,8 @@ function print_help ()
 {
 print_usage
 echo
-echo <<EOF
-"DESCRIPTION
+cat <<EOF
+DESCRIPTION
 
   deploy.sh can be used to bootstrap a cluster of machines/hosts for building/running SciDB.
   It assumes that its user has the root privileges on all the hosts in the cluster.
@@ -204,7 +204,7 @@ Commands:
                        and update <scidb_os_user>'s default PATH & LD_LIBRARY_PATH in ~<scidb_os_user>/.bashrc
 
   scidb_start          Start SciDB cluster  <database> as <scidb_os_user> using <coordinator-host>
-  scidb_stop           Start SciDB cluster  <database> as <scidb_os_user> using <coordinator-host>"
+  scidb_stop           Start SciDB cluster  <database> as <scidb_os_user> using <coordinator-host>
 EOF
 echo
 print_example
