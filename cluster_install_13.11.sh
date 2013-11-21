@@ -148,28 +148,28 @@ echo '* Enabling ssh access for root account from localhost to the cluster hosts
 echo '***********************************************************************************************'
 echo
 sleep ${NAPTIME}
-SCIDB_VERSION=13.9 ${here}/deploy.sh access root "" "" `cat $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh access root "" "" `cat $hostlist`
 echo
 echo '************************************************************************************************'
 echo '* Enabling ssh access for scidb account from localhost to the cluster hosts with NO PASSPHRASE *'
 echo '************************************************************************************************'
 echo
 sleep ${NAPTIME}
-SCIDB_VERSION=13.9 ${here}/deploy.sh access scidb "" "" `cat $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh access scidb "" "" `cat $hostlist`
 echo
 echo '**********************************************************'
 echo '* Configure and start Postgresql on the coordinator host *'
 echo '**********************************************************'
 echo
 sleep ${NAPTIME}
-SCIDB_VERSION=13.9 ${here}/deploy.sh prepare_postgresql scidb "" ${network} `head -1 $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh prepare_postgresql scidb "" ${network} `head -1 $hostlist`
 echo
 echo '******************************************'
 echo '* Installing SciDB to the cluster hosts. *'
 echo '******************************************'
 echo
 sleep ${NAPTIME}
-SCIDB_VERSION=13.9 ${here}/deploy.sh scidb_install_release 13.9 `cat $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh scidb_install_release 13.11 `cat $hostlist`
 if [ "${installation}" = "p" ];then
     echo
     echo '***************************************'
@@ -178,7 +178,7 @@ if [ "${installation}" = "p" ];then
     echo
     sleep ${NAPTIME}
     cp -f "${here}/p4_creds.txt" "${here}/common/p4_creds.txt"
-    SCIDB_VERSION=13.9 ${here}/deploy.sh p4_install_release 13.9 `cat $hostlist`
+    SCIDB_VERSION=13.11 ${here}/deploy.sh p4_install_release 13.11 `cat $hostlist`
     rm -f "${here}/common/p4_creds.txt"
 fi
 echo
@@ -193,7 +193,7 @@ sleep ${NAPTIME}
 if [ "${config_file}" != "config.ini" ];then
     cp -f "${config_file}" config.ini
 fi
-SCIDB_VERSION=13.9 ${here}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat $hostlist`
 if [ "${config_file}" != "config.ini" ];then
     rm -f config.ini
 fi
