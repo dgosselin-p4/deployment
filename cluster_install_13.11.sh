@@ -177,7 +177,11 @@ if [ "${installation}" = "p" ];then
     echo '***************************************'
     echo
     sleep ${NAPTIME}
-    cp -f "${here}/p4_creds.txt" "${here}/common/p4_creds.txt"
+    if [ -f "${credentials}" ];then
+	cp -f "${credentials}" "${here}/common/p4_creds.txt"
+    else
+	cp -f "${here}/p4_creds.txt" "${here}/common/p4_creds.txt"
+    fi
     SCIDB_VERSION=13.11 ${here}/deploy.sh p4_install_release 13.11 `cat $hostlist`
     rm -f "${here}/common/p4_creds.txt"
 fi
