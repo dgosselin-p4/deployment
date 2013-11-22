@@ -3,13 +3,16 @@ cluster_install_13.11.sh
 
 This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version 13.11 cluster from a single machine.
 
-./cluster_install_13.11.sh [-s|-p <credentials>] <hostlist> <network> <configfile>
+./cluster_install_13.11.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>
   -s         - if installing SciDB without P4
   -p <credentials>
              - if installing SciDB with P4
                <credentials> is a file with one line of the credentials (<username>:<password>) to access the P4 downloads.
+  ssh_key_file
+             - the ssh public key file to use for root and scidb access to all hosts
+               Note: make the key passphrase-less
   hostlist   - a file listing the hosts in the cluster
-             - the first line is the coordinator
+               Note: the first line is the coordinator
   network    - is the network mask the cluster is on
   configfile - SciDB configuration file
 
@@ -19,7 +22,7 @@ Read the SECURITY file to see what security issues this script will cause.
 This tool is provided as is with no support.
 Use at your own risk.
 ================
-You must provide 2 files (3 files if you are installing P4) and a network mask.
+You must provide 3 files (4 files if you are installing P4) and a network mask.
 
 The first option is required (-s or -p) and selects what type of installation you are doing.
     -s is a SciDB installation without P4.
@@ -27,13 +30,15 @@ The first option is required (-s or -p) and selects what type of installation yo
     The -p must be followed with a filename that has the credentials for accessing the P4 download area.
     The credentials file has one line consisting of the <username>:<password> for accessing the P4 download area.
 
-Hostlist is a list of the cluster hosts, one per line, with the first line designating the SciDB coordinator.
+ssh_key_file is the ssh public key file to use for root and scidb access to all hosts.
 
-Network is the network mask of the cluster of the form W.X.Y.Z/D
+hostlist is a list of the cluster hosts, one per line, with the first line designating the SciDB coordinator.
+
+ntwork is the network mask of the cluster of the form W.X.Y.Z/D
 
 Configfile is the SciDB configuration file for the cluster.
-Either write your own
-or use our new online tool called configurator that provides assistance selecting and building the initialization parameters file, config.ini.
-See https://github.com/paradigm4/configurator.
+    Either write your own or use our new online tool called "configurator" that provides assistance
+    selecting and building the initialization parameters file, config.ini.
+    See https://github.com/paradigm4/configurator.
 
 NOTE: At this time the user on each host that runs SciDB is hardcoded to "scidb".

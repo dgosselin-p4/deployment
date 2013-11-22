@@ -41,14 +41,11 @@ function disable_host_checking ()
 {
     echo "Host *" > ~/.ssh/config
     echo "   StrictHostKeyChecking no" >> ~/.ssh/config
-    echo "   UserKnownHostsFile=/dev/null" >> ~/.ssh/config
 }
 
 function selinux_home_ssh ()
 {
-    if [ selinuxenabled ]; then
-	setenforce 0 || true
-    fi
+    :
 }
 
 # Update right to ~/.ssh directory

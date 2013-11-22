@@ -7,7 +7,7 @@ Additionally this ssh is run with StrictHostKeyChecking=no.
 
 * Iptables will be disabled.
 
-* On CentOS/RH SELinux policy is set to Permissive.
+* On CentOS/RH if the SELinux policy is Enabled you will have problems with ssh.
 
 * The virbr0 network interface is shutdown.
 

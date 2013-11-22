@@ -36,12 +36,15 @@ NAPTIME=3
 function print_usage ()
 {
     echo ""
-    echo "${0} [-s|-p <credentials>] <hostlist> <network> <configfile>"
+    echo "${0} [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>"
     echo "  -s         - if installing SciDB without P4"
     echo "  -p <credentials>"
     echo "             - if installing SciDB with P4"
     echo "               <credentials> is a file with one line of the credentials"
     echo "                (<username>:<password>) to access the P4 downloads."
+    echo "  ssh_key_file"
+    echo "             - the ssh public key file to use for root and scidb access to all hosts"
+    echo "               Note: either use a keyring or make the key passphrase-less"
     echo "  hostlist   - a file listing the hosts in the cluster"
     echo "             - the first line is the coordinator"
     echo "  network    - is the network mask the cluster is on"
@@ -63,6 +66,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-[pP]|--[pP]4)
 	    if [ $# -lt 2 ]; then
+		echo
 		echo "ERROR: Option ${1} requires an argument."
 		print_usage
 		exit 1
@@ -72,6 +76,7 @@ while [ $# -gt 0 ]; do
 	    shift
 	    ;;
 	-*)
+	    echo
 	    echo "ERROR: Invalid option ${1}."
 	    print_usage
 	    exit 1
@@ -82,13 +87,15 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-if [ $# -ne 3 ];then
+if [ $# -ne 4 ];then
+    echo
     echo "ERROR: Wrong number of arguments."
     print_usage
     exit 1
 fi
 # Must have chosen either -s or -p
 if [ "${installation}" != "s" -a "${installation}" != "p" ];then
+    echo
     echo "ERROR: Unknown installation type."
     echo "       You need to pick SciDB with or without P4."
     echo "       [-s|-p credentials]"
@@ -98,14 +105,33 @@ fi
 # CREDENTIALS
 if [ "${installation}" = "p" ];then
     if [ ! -f "${credentials}" ];then
+	echo
 	echo "ERROR: Credentials '${credentials}' is not readable."
 	print_usage
 	exit 1
     fi
 fi
+# SSH KEY
+key="${1}"
+if [ ! -f "$key" ];then
+    echo
+    echo "ERROR: Keyfile '$key' is not readable."
+    print_usage
+    exit 1
+fi
+function notKey () {
+    echo
+    echo "ERROR: Keyfile '$key' is not a public key file."
+    print_usage
+    exit 1
+}
+ssh-keygen -l -f "${key}" > /dev/null || notKey
+key=`cat $key`
+shift
 # LIST OF HOSTS
 hostlist="${1}"
 if [ ! -f "$hostlist" ];then
+    echo
     echo "ERROR: Hostlist '$hostlist' is not readable."
     print_usage
     exit 1
@@ -115,6 +141,7 @@ shift
 network="${1}"
 # should be of the form d.d.d.d/d
 if [ "`echo ${network} | sed 's|^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\/[0-9]\{1,2\}$||'`" != "" ];then
+    echo
     echo "ERROR: Invalid network format '${network}'."
     echo "       Should be of the form W.X.Y.Z/N."
     print_usage
@@ -124,6 +151,7 @@ shift
 # CONFIG FILE
 config_file="${1}"
 if [ ! -f "${config_file}" ];then
+    echo
     echo "ERROR: Configuration file '${config_file}' is not readable."
     print_usage
     exit 1
@@ -136,6 +164,7 @@ shift
 database=""
 database="`grep -E '^\[.*\]$' ${config_file} | sed -e 's/\[//' -e 's/\]//'`"
 if [ "${database}" = "" ];then
+    echo
     echo "ERROR: Invalid configuration file. Can not find database name."
     exit 1
 fi
@@ -148,14 +177,44 @@ echo '* Enabling ssh access for root account from localhost to the cluster hosts
 echo '***********************************************************************************************'
 echo
 sleep ${NAPTIME}
-SCIDB_VERSION=13.11 ${here}/deploy.sh access root "" "" `cat $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh access root "" "${key}" `cat $hostlist`
+echo
+echo '***********************************************************************************************'
+echo '* Testing ssh access for root account from localhost to the cluster hosts with NO PASSPHRASE *'
+echo '***********************************************************************************************'
+echo
+for h in `cat $hostlist`
+do
+    ssh -o PreferredAuthentications=publickey root@$h hostname
+    if [ $? != 0 ]; then
+	echo
+	echo "Sorry, key authentication failed for root@$h."
+	echo "Please correct the problem and try again."
+	exit 1
+    fi
+done
 echo
 echo '************************************************************************************************'
 echo '* Enabling ssh access for scidb account from localhost to the cluster hosts with NO PASSPHRASE *'
 echo '************************************************************************************************'
 echo
 sleep ${NAPTIME}
-SCIDB_VERSION=13.11 ${here}/deploy.sh access scidb "" "" `cat $hostlist`
+SCIDB_VERSION=13.11 ${here}/deploy.sh access scidb "" "${key}" `cat $hostlist`
+echo
+echo '***********************************************************************************************'
+echo '* Testing ssh access for scidb account from localhost to the cluster hosts with NO PASSPHRASE *'
+echo '***********************************************************************************************'
+echo
+for h in `cat $hostlist`
+do
+    if ! ssh -o PreferredAuthentications=publickey scidb@$h hostname ; then
+	echo
+	echo "Sorry, key authentication failed for scidb@$h."
+	echo "Please correct the problem and try again."
+	exit 1
+    fi
+done
+exit 0
 echo
 echo '**********************************************************'
 echo '* Configure and start Postgresql on the coordinator host *'
