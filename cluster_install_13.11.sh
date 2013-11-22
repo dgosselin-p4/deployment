@@ -185,8 +185,7 @@ echo '**************************************************************************
 echo
 for h in `cat $hostlist`
 do
-    ssh -o PreferredAuthentications=publickey root@$h hostname
-    if [ $? != 0 ]; then
+    if ! ssh -o PreferredAuthentications=publickey root@$h hostname ; then
 	echo
 	echo "Sorry, key authentication failed for root@$h."
 	echo "Please correct the problem and try again."
@@ -214,7 +213,6 @@ do
 	exit 1
     fi
 done
-exit 0
 echo
 echo '**********************************************************'
 echo '* Configure and start Postgresql on the coordinator host *'
