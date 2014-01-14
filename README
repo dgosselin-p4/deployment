@@ -1,9 +1,9 @@
-cluster_install_13.11.sh
+cluster_install_13.12.sh
 =======================
 
-This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version 13.11 cluster from a single machine.
+This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version 13.12 cluster from a single machine.
 
-./cluster_install_13.11.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>
+./cluster_install_13.12.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>
   -s         - if installing SciDB without P4
   -p <credentials>
              - if installing SciDB with P4
