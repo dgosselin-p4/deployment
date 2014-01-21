@@ -210,10 +210,14 @@ echo
 print_example
 }
 
-# detect directory where we run
+# detect directory where we run and use that to find
+# source (../)
+# deploy.sh's scripts (./common)
+# build (../stage/build)
+
 source_path=${SCIDB_SOURCE_PATH:=$(readlink -f $(dirname $0)/../)}
-bin_path=${source_path}/deployment/common
-build_path=${SCIDB_BUILD_PATH:=$(pwd)}
+bin_path=$(readlink -f $(dirname $0)/common)
+build_path=${SCIDB_BUILD_PATH:=$(readlink -f $(dirname $0)/../stage/build)}
 echo "Source path: ${source_path}"
 echo "Script common path: ${bin_path}"
 echo "Build path: ${build_path}"
@@ -930,21 +934,15 @@ case ${1} in
 	scidb_prepare ${username} "${password}" ${db_user} "${db_passwd}" ${database} ${base_path} ${instance_count} ${no_watchdog} ${redundancy} ${chunk_segment_size} ${coordinator} $@
 	;;
     scidb_prepare_wcf)
-	if [ $# -lt 6 ]; then
+	if [ $# -lt 5 ]; then
 	    print_usage_exit 1
 	fi
         username=${2}
         password="${3}"
         database=${4}
-	configfile="${5}"
-        coordinator=${6}
-        shift 6
-
-        # get password from stdin if not given on cmd
-        if [ "${password}" == "" ]; then
-           get_password "${username}"
-        fi
-	scidb_prepare_wcf ${username} "${password}" ${database} "${configfile}" ${coordinator} $@
+        coordinator=${5}
+        shift 5
+	scidb_prepare_wcf ${username} "${password}" ${database} ${coordinator} $@
 	;;
     scidb_start)
 	if [ $# -lt 4 ]; then
