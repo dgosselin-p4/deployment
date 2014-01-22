@@ -33,9 +33,6 @@ Configuring remote access:
   deploy.sh access  <os_user> <os_user_passwd> <ssh_public_key> <host ...>
 
 Preparing remote machines:
-  deploy.sh prepare_toolchain   <host ...>
-  deploy.sh setup_ccache        <scidb_os_user> <host ...>
-  deploy.sh prepare_chroot      <scidb_os_user> <host ...>
   deploy.sh prepare_postgresql  <postgresql_os_username>
                                 <postgresql_os_password>
                                 <network/mask>
@@ -69,52 +66,6 @@ print_usage
 exit ${1}
 }
 
-function print_example ()
-{
-echo
-cat <<EOF
-EXAMPLE
-Using deploy.sh to set up a development/test environment on local machine (localhost).
-
-1) Password-less ssh access from localhost to localhost:
-
-sudo su
-if [ ! -f ~/.ssh/id_rsa.pub ] ; then  ssh-keygen ; fi #(all defaults or consult ssh manual)
-exit
-./deploy.sh access root \"\" localhost
-
-2) Install the packages required for building SciDB from sources:
-
-./deploy.sh prepare_toolchain localhost
-
-3) Build SciDB packages in the current environment:
-
-cd my_scidb_svn_trunk
-mkdir /tmp/my_packages_path
-cmake .
-make
-./deploy.sh build_fast /tmp/my_packages_path
-
-4) Install & configure PostgreSQL:
-
-./deploy.sh prepare_postgresql postgres my_postgres_password 192.168.0.0/24 localhost
-
-5) Install SciDB packages to a cluster
-
-./deploy.sh scidb_install /tmp/my_packages_path localhost
-
-6) Configure SciDB cluster on localhost with 4 instances redundancy=1, default chunk-segment-size,
-   and data directory root at ~/scidb-data
-
-./deploy.sh scidb_prepare my_username \"\" mydb mydb mydb ~/scidb-data 4 1 default localhost
-
-7) Start SciDB:
-
-./deploy.sh scidb_start my_username mydb localhost
-EOF
-echo
-}
-
 function print_help ()
 {
 print_usage
@@ -136,15 +87,6 @@ Commands:
                        and leaves a copy in your shell history file even after logout. The option is for backwards compatibility
                        only.
                        Giving '' for <ssh_public_key> uses ~/.ssh/id_rsa.pub key.
-
-  prepare_toolchain    Install the package dependencies required for building SciDB from sources.
-                       The operation is performed on all specified <host ...> as root.
-
-  setup_ccache         Configure ccache. This operation is not required for any other deploy.sh operations.
-                       The operation is performed on all specified <host ...> as the specified <scidb_os_user>.
-
-  prepare_chroot       Install the package dependencies and tools required to prepare a 'chroot' environment for building SciDB packages.
-                       The operation is performed on all specified <host ...> as the specified <scidb_os_user>.
 
   prepare_postgresql   Install & configure PostgreSQL on <scidb-coordinator-host>.
                        <postgresql_os_username> - OS user for PostgreSQL (commonly used name is 'postgres')
@@ -207,7 +149,6 @@ Commands:
   scidb_stop           Start SciDB cluster  <database> as <scidb_os_user> using <coordinator-host>
 EOF
 echo
-print_example
 }
 
 # detect directory where we run and use that to find
@@ -435,15 +376,6 @@ function build_scidb_packages ()
     (cd ${build_path}; ${source_path}/utils/make_packages.sh ${kind} ${way} ${packages_path} ${target})
 }
 
-# Setup ccache on remote host
-function setup_ccache ()
-{
-    local username="${1}"
-    local password="${2}"
-    local hostname=${3}
-    remote "${username}" "${password}" ${hostname} "./setup_ccache.sh"
-}
-
 # Register 3rdparty SciDB repository on remote host
 function register_3rdparty_scidb_repository ()
 {
@@ -476,28 +408,6 @@ function install_and_configure_postgresql ()
     local network=${3}
     local hostname=${4}
     remote root "" ${hostname} "./configure_postgresql.sh ${username} \\\"${password}\\\" ${network}"
-}
-
-# Prepare machine for developer (for build Packages)
-function prepare_toolchain ()
-{
-    local hostname=${1}
-    echo "Prepare toolchain @${hostname}"
-    register_3rdparty_scidb_repository "${hostname}"
-    remote root "" ${hostname} "./prepare_toolchain.sh ${SCIDB_VER}"
-    stop_virtual_bridge_zero "${hostname}"
-}
-
-# Prepare chroot on remote machine for build packages 
-function prepare_chroot ()
-{
-    local username="${1}"
-    local password="${2}"
-    local hostname=${3}
-    echo "Prepare for build SciDB packages in chroot on ${hostname}"
-    register_3rdparty_scidb_repository "${hostname}"
-    remote root "" ${hostname} "./prepare_chroot.sh ${username}"
-    remote "${username}" "${password}" ${hostname} "./chroot_build.sh" "${source_path}/utils/chroot_build.py"
 }
 
 # Get package names from filenames
@@ -789,44 +699,6 @@ case ${1} in
 	shift 4
 	for hostname in $@; do
 	    push_and_pull_packages ${path_local} ${username} ${hostname} ${path_remote} 1
-	done;
-	;;
-    prepare_toolchain)
-	if [ $# -lt 2 ]; then
-	    print_usage_exit 1
-	fi
-	shift 1
-
-	for hostname in $@; do 
-	    prepare_toolchain "${hostname}"
-	done;
-	;;
-    setup_ccache)
-	if [ $# -lt 3 ]; then
-	    print_usage_exit 1
-	fi
-	username="${2}"
-	shift 2
-
-        # get password from stdin
-        get_password "${username}"
-
-	for hostname in $@; do 
-	    setup_ccache "${username}" "${password}" ${hostname}
-	done;
-	;;
-    prepare_chroot)
-	if [ $# -lt 3 ]; then
-	    print_usage_exit 1
-	fi
-	username="${2}"
-	shift 2
-
-        # get password from stdin
-        get_password "${username}"
-
-	for hostname in $@; do
-	    prepare_chroot "${username}" "${password}"  "${hostname}"
 	done;
 	;;
     prepare_postgresql)
