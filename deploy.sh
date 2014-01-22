@@ -37,25 +37,13 @@ Preparing remote machines:
                                 <postgresql_os_password>
                                 <network/mask>
                                 <scidb-coordinator-host>
-Building packages:
-  deploy.sh build       {Debug|RelWithDebInfo|Release} <packages_path>
-  deploy.sh build_fast  <packages_path>
-  deploy.sh build_deps  <packages_path>
 
 SciDB control on remote machines:
-  deploy.sh scidb_install    <packages_path> <coordinator-host> [host ...]
-  deploy.sh scidb_remove     <packages_path> <coordinator-host> [host ...]
   deploy.sh scidb_install_release <ScidbVersion> <coordinator-host> [host ...]
   deploy.sh scidb_remove_release  <ScidbVersion> <coordinator-host> [host ...]
-  deploy.sh scidb_prepare    <scidb_os_user> <scidb_os_passwd> <db_user> <db_passwd>
-                             <database> <base_path>
-                             <instance_count> <no_watchdog> <redundancy> <chunk-segment-size>
-                             <coordinator-host> [host ...]
   deploy.sh scidb_prepare_wcf <scidb_os_user> <scidb_os_passwd>
                              <database>
                              <coordinator-host> [host ...]
-  deploy.sh scidb_start      <scidb_os_user> <database> <coordinator-host>
-  deploy.sh scidb_stop       <scidb_os_user> <database> <coordinator-host>
 EOF
 echo
 }
@@ -73,7 +61,7 @@ echo
 cat <<EOF
 DESCRIPTION
 
-  deploy.sh can be used to bootstrap a cluster of machines/hosts for building/running SciDB.
+  deploy.sh can be used to bootstrap a cluster of machines/hosts for running SciDB.
   It assumes that its user has the root privileges on all the hosts in the cluster.
   It also requires password-less ssh from the local host to the cluster as root (see access).
 
@@ -93,48 +81,11 @@ Commands:
                        <postgresql_os_password> - password for PostgreSQL user
                        <network/mask> - subnet identifier in the CIDR (W.X.Y.Z/N) notation
 
-  build                Build SciDB packages on the local host in a clean (chroot) environment.
-                       The build type is either 'Debug','RelWithDebInfo' or 'Release'.
-                       Deposit built packages to <packages_path>.
-
-  build_fast           Build SciDB packages on the local host in the user's current environment.
-                       Deposit built packages to <packages_path>.
-                       This command must be invoked in a build-able SciDB tree
-                       (i.e. the tree populated by 'cmake' where 'make' would build SciDB sources)
-
-  build_deps           Build packages for SciDB (3rd party) dependencies on the local host. Deposit built packages to <packages_path>.
-                       This command is useful only for populating a package repository (e.g. downloads.paradig4.com)
-
-  scidb_install        Install SciDB packages in <packages_path> on <coordinator-host> and <host ...>.
-                       The required repositories for the SciDB packages are expected to be already registered on all hosts.
-                       The first host is the cluster coordinator, and some packages are installed only on the coordinator.
-
-  scidb_remove         Remove SciDB packages listed in <packages_path> from <coordinator-host> and <host ...>
-
   scidb_install_release
                        Install SciDB release <ScidbVersion> on <coordinator-host> and <host ...>.
                        The first host is the cluster coordinator, and some packages are installed only on the coordinator.
 
   scidb_remove_release Remove SciDB release <ScidbVersion> from <coordinator-host> and <host ...>
-
-  scidb_prepare        Prepare the cluster for running SciDB as <scidb_os_user>. <scidb_os_passwd> should be "" and be supplied on stdin.
-                       Supplying passwords on the command line in clear text is a well-known security risk because they can be viewed by
-                       other users of the system. The option is only for backwards compatibility.
-                       The first host, <coordinator-host>, is the cluster coordinator, and some steps are performed only on that host.
-                       Among other steps, this command generates a config.ini file describing a SciDB database as follows:
-                       <database> - SciDB database name
-                       <db_user> - PostgreSQL user/role to associated with the SciDB database
-                       <db_passwd>  - PostgreSQL user password
-                       <base_path> - directory root for SciDB instance data directories
-                       <instance_count> - number of instances per host
-                       <no_watchdog> - do not start watchdog process (default: 'false')
-                       <redundancy> - the number of data replicas (distributed among the instances)
-                       <chunk-segment-size> - the size of storage file segments
-                       Use 'default' for either <redundancy> or <chunk-segment-size> to keep SciDB defaults.
-                       Consult a detailed description of config.ini in the user guide or elsewhere.
-                       It will also setup a password-less ssh from <coordinator-host>
-                       to *all* hosts using <scidb_os_user> and <scidb_os_passwd>
-                       and update <scidb_os_user>'s default PATH & LD_LIBRARY_PATH in ~<scidb_os_user>/.bashrc
 
   scidb_prepare_wcf    Prepare the cluster for running SciDB as <scidb_os_user>. <scidb_os_passwd> should be "" and be supplied on stdin.
                        Supplying passwords on the command line in clear text is a well-known security risk because they can be viewed by
@@ -144,35 +95,21 @@ Commands:
                        It will also setup a password-less ssh from <coordinator-host>
                        to *all* hosts using <scidb_os_user> and <scidb_os_passwd>
                        and update <scidb_os_user>'s default PATH & LD_LIBRARY_PATH in ~<scidb_os_user>/.bashrc
-
-  scidb_start          Start SciDB cluster  <database> as <scidb_os_user> using <coordinator-host>
-  scidb_stop           Start SciDB cluster  <database> as <scidb_os_user> using <coordinator-host>
 EOF
 echo
 }
 
 # detect directory where we run and use that to find
-# source (../)
-# deploy.sh's scripts (./common)
-# build (../stage/build)
-
-source_path=${SCIDB_SOURCE_PATH:=$(readlink -f $(dirname $0)/../)}
 bin_path=$(readlink -f $(dirname $0)/common)
-build_path=${SCIDB_BUILD_PATH:=$(readlink -f $(dirname $0)/../stage/build)}
-echo "Source path: ${source_path}"
 echo "Script common path: ${bin_path}"
-echo "Build path: ${build_path}"
 
 SCIDB_VERSION=${SCIDB_VERSION:=NOTSET}
 if [ "$SCIDB_VERSION" != "NOTSET" ]; then
     # If SCIDB_VERSION is set use that as the version number
     SCIDB_VER=${SCIDB_VERSION}
-elif [ -f "${source_path}/version" ]; then
-    # If we are in the source tree there is a file ../version with the version number
-    SCIDB_VER=`awk -F . '{print $1"."$2}' ${source_path}/version`
 else
-    # If we are in a /opt/scidb/<VER>/deployment tree then ../ is the version number
-    SCIDB_VER=`basename ${source_path}`
+    echo "Environment variable SCIDB_VERSION is not set."
+    exit 1
 fi
 echo "SciDB version: ${SCIDB_VER}"
 
@@ -249,141 +186,6 @@ function provide_password_less_ssh_access ()
     remote "${username}" "${password}" "${hostname}" "./user_access.sh \\\"${username}\\\" \\\"${key}\\\""
 }
 
-# Copy source code to remote host to result
-function push_source ()
-{
-    local username=${1}
-    local hostname=${2}
-    local source_path="${3}"
-    local source_name=`basename ${source_path}`
-    local remote_path="${4}"
-    local remote_name=`basename ${remote_path}`
-    echo "Archive the ${source_path} to ${source_path}.tar.gz"
-    rm -f ${source_path}.tar.gz
-    (cd ${source_path}/.. && tar -czpf ${source_path}.tar.gz ${source_name})
-    echo "Remove ${username}@${hostname}:${remote_path}"
-    remote_no_password "${username}" "" "${hostname}" "${SSH} ${username}@${hostname} \"rm -rf ${remote_path} && rm -rf ${remote_path}.tar.gz\""
-    echo "Copy ${source_path} to ${username}@${hostname}:${remote_path}"
-    remote_no_password "${username}" "" "${hostname}" "${SCP} ${source_path}.tar.gz ${username}@${hostname}:${remote_path}.tar.gz"
-    echo "Unpack ${remote_path}.tar.gz to ${remote_path}"
-    remote_no_password "${username}" "" "${hostname}" "${SSH} ${username}@${hostname} \"cd `dirname ${remote_path}` && tar xf ${remote_name}.tar.gz \""    
-    if [ "${source_name}" != "${remote_name}" ]; then 
-        remote_no_password "${username}" "" "${hostname}" "${SSH} ${username}@${hostname} \"cd `dirname ${remote_path}` && mv ${source_name} ${remote_name}\""
-    fi;
-}
-
-# Configure script for work with rpm/yum
-function configure_rpm ()
-{
-    # build target
-    target=centos-6-x86_64
-    # package kind
-    kind=rpm
-    # get package name from filename
-    function package_info ()
-    {
-	rpm -qip ${1} | grep Name | awk '{print $3}'
-    }
-    # command for remove packages
-    remove="yum remove -y"
-}
-
-# Configure script for work with deb/apt-get
-function configure_deb ()
-{
-    # build target
-    target=ubuntu-precise-amd64
-    # package king
-    kind=deb
-    # get package name from filename
-    function package_info ()
-    {
-	dpkg -I ${1} | grep Package | awk '{print $2}'
-    }
-    # command for remove packages
-    remove="apt-get remove -y"
-}
-
-# Detect hostname OS and configure package manager for with it
-# You can restrict work with Red Hat (if you want build packages, for example)
-function configure_package_manager ()
-{
-    local hostname=${1}
-    local with_redhat=${2}
-    # Get file for detect OS
-    FILE=/etc/issue
-    if [ "${hostname}" != "localhost" ]; then
-	# grab remote /etc/issue to local file
-	remote_no_password root "" "${hostname}" "${SCP} root@${hostname}:/etc/issue ./issue"
-	FILE=./issue
-    fi;
-    # Detech OS
-    local OS=`${bin_path}/os_detect.sh ${FILE}`
-    if [ "${hostname}" != "localhost" ]; then
-	rm -f ./issue
-    fi;
-    # Match OS
-    case "${OS}" in
-	"CentOS 6")
-	    configure_rpm
-	    ;;
-	"RedHat 6")
-	    if [ ${with_redhat} == 1 ]; then
-		configure_rpm
-	    else
-		echo "We do not support build SciDB under RedHat 6. Please use CentOS 6 instead"
-		exit 1
-	    fi;
-	    ;;
-	"Ubuntu 12.04")
-	    configure_deb
-	    ;;
-	*)
-	    echo "Not supported OS"
-	    exit 1;
-	    ;;
-    esac
-}
-
-# Pull/Push packages from/to remote host
-function push_and_pull_packages ()
-{
-    local username=${2}
-    local hostname=${3}
-    local push=${5}
-    configure_package_manager ${hostname} 1
-    local path_local=`readlink -f ${1}`
-    local path_remote="${4}"
-    local scp_args_remote="${username}@${hostname}:${path_remote}/*"
-    if [ $push == 1 ]; then
-	remote_no_password "${username}" "" "${hostname}" "rm -rf ${path_remote}"
-	remote_no_password "${username}" "" "${hostname}" "mkdir -p ${path_remote}"
-	remote_no_password "${username}" "" "${hostname}" "${SCP} ${path_local} ${scp_args_remote}"
-    else
-	rm -rf ${path_local}
-	mkdir -p ${path_local}
-	remote_no_password "${username}" "" "${hostname}" "${SCP} ${scp_args_remote} ${path_local}"
-    fi;
-}
-
-# Build packages ("chroot" or "insource")
-function build_scidb_packages ()
-{
-    configure_package_manager "localhost" 0
-    local packages_path=`readlink -f ${1}`
-    local way="${2}"
-    rm -rf ${packages_path}
-    (cd ${build_path}; ${source_path}/utils/make_packages.sh ${kind} ${way} ${packages_path} ${target})
-}
-
-# Register 3rdparty SciDB repository on remote host
-function register_3rdparty_scidb_repository ()
-{
-    local hostname=${1}
-    echo "Register SciDB 3rdparty repository on ${hostname}"
-    remote root "" ${hostname} "./register_3rdparty_scidb_repository.sh"
-}
-
 # Register released SciDB repository on remote host
 function register_scidb_repository ()
 {
@@ -391,13 +193,6 @@ function register_scidb_repository ()
     local hostname=${2}
     echo "Register SciDB repository ${release} on ${hostname}"
     remote root "" ${hostname} "./register_scidb_repository.sh ${release}"
-}
-
-# Stop virtual bridge on remote host
-function stop_virtual_bridge_zero ()
-{
-    local hostname=${1}
-    remote root "" ${hostname} "./stop_virbr0.sh"
 }
 
 # Install & configure PostgreSQL
@@ -410,25 +205,6 @@ function install_and_configure_postgresql ()
     remote root "" ${hostname} "./configure_postgresql.sh ${username} \\\"${password}\\\" ${network}"
 }
 
-# Get package names from filenames
-function package_names()
-{
-    local filename
-    for filename in $@; do
-	package_info ${filename}
-    done;
-}
-
-# Remove SciDB from remote host
-function scidb_remove()
-{
-    local hostname=${2}
-    configure_package_manager ${hostname} 1
-    local packages_path=`readlink -f ${1}`
-    local packages=`ls ${packages_path}/*.${kind} | xargs`
-    remote root "" "${hostname}" "${remove} `package_names ${packages} | xargs`"
-}
-
 # Remove SciDB Release from remote host
 function scidb_remove_release()
 {
@@ -437,23 +213,6 @@ function scidb_remove_release()
     local with_coordinator=${3}
 
     remote root "" "${hostname}" "./scidb_remove_release.sh ${release} ${with_coordinator}"
-}
-
-# Install SciDB to remote host from a package directory
-function scidb_install()
-{
-    local hostname=${2}
-    local with_coordinator=${3}
-    register_3rdparty_scidb_repository "${hostname}"
-    configure_package_manager ${hostname} 1
-    local packages_path=`readlink -f ${1}`
-    local packages
-    if [ "1" == "${with_coordinator}" ]; then
-	packages="$(ls ${packages_path}/*.${kind} | xargs)"
-    else
-	packages="$(ls ${packages_path}/*.${kind} | grep -v coord | xargs)"
-    fi;
-    remote root "" "${hostname}" "./scidb_install.sh" "${packages}"
 }
 
 # Install SciDB to remote host from a release on 
@@ -466,48 +225,6 @@ function scidb_install_release()
     remote root "" "${hostname}" "./scidb_install_release.sh ${release} ${with_coordinator}"
 }
 
-# Generate SciDB config
-function scidb_config ()
-{
-local username="${1}"
-local password="${2}"
-local database="${3}"
-local base_path="${4}"
-local instance_count="${5}"
-local no_watchdog="${6}"
-local redundancy="${7}"
-local chunk_segment_size="${8}"
-local coordinator="${9}"
-shift 9
-echo "[${database}]"
-local coordinator_instance_count=${instance_count}
-let coordinator_instance_count--
-echo "server-0=${coordinator},${coordinator_instance_count}"
-node_number=1
-local hostname
-for hostname in $@; do
-    echo "server-${node_number}=${hostname},${instance_count}"
-    let node_number++
-done;
-echo "db_user=${username}"
-echo "db_passwd=${password}"
-if [ "${no_watchdog}" != "default" ]; then
-    echo "no-watchdog=${no_watchdog}"
-fi;
-if [ "${redundancy}" != "default" ]; then
-    echo "redundancy=${redundancy}"
-fi;
-if [ "${chunk_segment_size}" != "default" ]; then
-    echo "chunk-segment-size=${chunk_segment_size}"
-fi;
-echo "install_root=/opt/scidb/${SCIDB_VER}"
-echo "pluginsdir=/opt/scidb/${SCIDB_VER}/lib/scidb/plugins"
-echo "logconf=/opt/scidb/${SCIDB_VER}/share/scidb/log4cxx.properties"
-echo "base-path=${base_path}"
-echo "base-port=1239"
-echo "interface=eth0"
-}
-
 # Prepare machine for run SciDB (setup environment, copy in config file, etc)
 function scidb_prepare_node ()
 {
@@ -516,40 +233,6 @@ function scidb_prepare_node ()
     local hostname=${3}
     remote "${username}" "${password}" ${hostname} "./scidb_prepare.sh ${SCIDB_VER}"
     remote root "" ${hostname} "cat config.ini > /opt/scidb/${SCIDB_VER}/etc/config.ini && chown ${username} /opt/scidb/${SCIDB_VER}/etc/config.ini" `readlink -f ./config.ini`
-}
-
-# Prepare SciDB cluster
-function scidb_prepare ()
-{
-    local username="${1}"
-    local password="${2}"
-    local db_user=${3}
-    local db_passwd="${4}"
-    local database=${5}
-    local base_path=${6}
-    local instance_count=${7}
-    local no_watchdog=${8}
-    local redundancy=${9}
-    local chunk_segment_size=${10}
-    local coordinator=${11}
-    shift 11
-
-    # grab coordinator public key
-    local coordinator_key=`remote_no_password "${username}" "${password}" "${coordinator}" "${SSH} ${username}@${coordinator}  \"cat ~/.ssh/id_rsa.pub\"" | tail -1`
-
-    # generate config.ini locally
-    scidb_config ${db_user} "${db_passwd}" ${database} ${base_path} ${instance_count} ${no_watchdog} ${redundancy} ${chunk_segment_size} ${coordinator} "$@" | tee ./config.ini
-
-    # deposit config.ini to coordinator
-
-    local hostname
-    for hostname in ${coordinator} $@; do
-        # generate scidb environment for username
-	scidb_prepare_node "${username}" "${password}" ${hostname} # not ideal to modify the environment
-	provide_password_less_ssh_access ${username} "${password}" "${coordinator_key}" ${hostname}
-    done;
-    rm -f ./config.ini
-    remote root "" ${coordinator} "./scidb_prepare_coordinator.sh ${username} ${database} ${SCIDB_VER}" 
 }
 
 # Prepare SciDB cluster given a config file (wcf=With Configuration File)
@@ -572,34 +255,6 @@ function scidb_prepare_wcf ()
 	provide_password_less_ssh_access ${username} "${password}" "${coordinator_key}" ${hostname}
     done;
     remote root "" ${coordinator} "./scidb_prepare_coordinator.sh ${username} ${database} ${SCIDB_VER}" 
-}
-
-# Start SciDB
-function scidb_start ()
-{
-    local username="${1}"
-    local password="${2}"
-    local database=${3}
-    local coordinator=${4}
-    remote "${username}" "${password}" ${coordinator} "./scidb_start.sh ${database} ${SCIDB_VER}"
-}
-
-# Stop SciDB
-function scidb_stop ()
-{
-    local username="${1}"
-    local password="${2}"
-    local database=${3}
-    local coordinator=${4}
-    remote "${username}" "${password}" ${coordinator} "./scidb_stop.sh ${database} ${SCIDB_VER}"
-}
-
-# Install & configure Apache (required for CDash on build machines)
-function prepare_httpd_cdash ()
-{
-    local username=${1}
-    local build_machine=${2}
-    remote root "" ${build_machine} "./prepare_httpd_cdash.sh ${username}"
 }
 
 # Register released P4 repository on remote host
@@ -666,41 +321,6 @@ case ${1} in
 	    provide_password_less_ssh_access "${username}" "${password}" "${key}" "${hostname}"
 	done;
 	;;
-    push_source)
-	if [ $# -lt 4 ]; then
-	    print_usage_exit 1
-	fi
-	username=${2}
-	remote_path=${3}
-	shift 3
-	for hostname in $@; do
-	    push_source ${username} ${hostname} ${source_path} ${remote_path}
-        done;
-	;;
-    pull_packages)
-	if [ $# -lt 5 ]; then
-	    print_usage_exit 1
-	fi
-	path_local=`readlink -f ${2}`
-	username=${3}
-	path_remote="${4}"
-	shift 4
-	for hostname in $@; do
-	    push_and_pull_packages ${path_local} ${username} ${hostname} ${path_remote} 0
-	done;
-	;;
-    push_packages)
-	if [ $# -lt 5 ]; then
-	    print_usage_exit 1
-	fi
-	path_local=`readlink -f ${2}`
-	username=${3}
-	path_remote="${4}"
-	shift 4
-	for hostname in $@; do
-	    push_and_pull_packages ${path_local} ${username} ${hostname} ${path_remote} 1
-	done;
-	;;
     prepare_postgresql)
 	if [ $# -ne 5 ]; then
 	    print_usage_exit 1
@@ -710,41 +330,6 @@ case ${1} in
 	network=${4}
 	hostname=${5}
 	install_and_configure_postgresql ${username} "${password}" ${network} ${hostname}
-	;;
-    build)
-	if [ $# -ne 3 ]; then
-	    print_usage_exit 1
-	fi
-	package_build_type=${2}
-	packages_path=${3}
-	build_scidb_packages "${packages_path}" "chroot ${package_build_type}"
-	;;
-    build_fast)
-	if [ $# -ne 2 ]; then
-	    print_usage_exit 1
-	fi
-	packages_path=${2}
-	build_scidb_packages "${packages_path}" "insource"
-	;;
-    build_deps)
-	if [ $# -ne 2 ]; then
-	    print_usage_exit 1
-	fi
-	packages_path=${2}
-	echo "TODO build SciDB dependencies packages"
-	;;
-    scidb_install)
-	if [ $# -lt 3 ]; then
-	    print_usage_exit 1
-	fi
-	packages_path=${2}
-	coordinator=${3}
-	echo "Coordinator IP: ${coordinator}"
-	shift 3
-	scidb_install ${packages_path} ${coordinator} 1
-	for hostname in $@; do
-	    scidb_install ${packages_path} ${hostname} 0
-	done;
 	;;
     scidb_install_release)
 	if [ $# -lt 3 ]; then
@@ -772,39 +357,6 @@ case ${1} in
 	    scidb_remove_release ${releaseNum} ${hostname} 0
 	done;
 	;;
-    scidb_remove)
-	if [ $# -lt 3 ]; then
-	    print_usage_exit 1
-	fi
-	packages_path=${2}
-	shift 2
-	for hostname in $@; do
-	    scidb_remove ${packages_path} ${hostname}
-	done;
-	;;
-    scidb_prepare)
-	if [ $# -lt 12 ]; then
-	    print_usage_exit 1
-	fi
-        username=${2}
-        password="${3}"
-        db_user=${4}
-        db_passwd="${5}"
-        database=${6}
-        base_path=${7}
-        instance_count=${8}
-        no_watchdog=${9}
-        redundancy=${10}
-        chunk_segment_size=${11}
-        coordinator=${12}
-        shift 12
-
-        # get password from stdin if not given on cmd
-        if [ "${password}" == "" ]; then
-           get_password "${username}"
-        fi
-	scidb_prepare ${username} "${password}" ${db_user} "${db_passwd}" ${database} ${base_path} ${instance_count} ${no_watchdog} ${redundancy} ${chunk_segment_size} ${coordinator} $@
-	;;
     scidb_prepare_wcf)
 	if [ $# -lt 5 ]; then
 	    print_usage_exit 1
@@ -815,44 +367,6 @@ case ${1} in
         coordinator=${5}
         shift 5
 	scidb_prepare_wcf ${username} "${password}" ${database} ${coordinator} $@
-	;;
-    scidb_start)
-	if [ $# -lt 4 ]; then
-	    print_usage_exit 1
-	fi
-	username="${2}"
-	database=${3}
-	coordinator="${4}"
-        shift 4
-
-        # get password from stdin
-        get_password "${username}"
-
-        scidb_start "${username}" "${password}" ${database} ${coordinator}
-	;;
-    scidb_stop)
-	if [ $# -lt 4 ]; then
-	    print_usage_exit 1
-	fi
-	username="${2}"
-	database=${3}
-	coordinator="${4}"
-        shift 4
-
-        # get password from stdin
-        get_password "${username}"
-
-        scidb_stop "${username}" "${password}" ${database} ${coordinator}
-	;;
-    prepare_httpd_cdash)
-	if [ $# -lt 3 ]; then
-	    print_usage_exit 1
-	fi;
-	username=${2}
-	shift 2
-	for hostname in $@; do
-	    prepare_httpd_cdash ${username} ${hostname}
-	done;
 	;;
     p4_install_release)
 	if [ $# -lt 3 ]; then
