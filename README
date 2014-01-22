@@ -1,44 +1,73 @@
-cluster_install_13.12.sh
+cluster_install_XX.YY.sh
 =======================
 
-This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version 13.12 cluster from a single machine.
+This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version XX.YY cluster from a single machine.
 
-./cluster_install_13.12.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>
+./cluster_install_XX.YY.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>
   -s         - if installing SciDB without P4
   -p <credentials>
              - if installing SciDB with P4
                <credentials> is a file with one line of the credentials (<username>:<password>) to access the P4 downloads.
   ssh_key_file
-             - the ssh public key file to use for root and scidb access to all hosts
+             - a single ssh public key file used for both root and scidb access to all hosts
                Note: make the key passphrase-less
   hostlist   - a file listing the hosts in the cluster
-               Note: the first line is the coordinator
+               Note: the first host is the coordinator
   network    - is the network mask the cluster is on
+  	       Note: in the format of W.X.Y.Z/D
   configfile - SciDB configuration file
 
 ================
-Read the SECURITY file to see what security issues this script will cause.
+DISCLAIMER
 
 This tool is provided as is with no support.
 Use at your own risk.
 ================
-You must provide 3 files (4 files if you are installing P4) and a network mask.
+Read the SECURITY file to see what security issues this script will cause.
+================
+PREREQUISITES
 
-The first option is required (-s or -p) and selects what type of installation you are doing.
+Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
+
+The user account "scidb" must be present on all nodes with the same password and home directory.
+The user account "scidb" must have sudo privileges on all nodes.
+You must know the password for "root" and "scidb" on all nodes.
+
+SSH must be installed and running on all nodes.
+Particularly for SELinux, passphraseless ssh keys must be allowed.
+================
+COMMANDLINE OPTIONS
+
+[-s|-p <credentials>]
+This option selects what type of installation you are doing.
     -s is a SciDB installation without P4.
     -p is a SciDB installation with P4.
     The -p must be followed with a filename that has the credentials for accessing the P4 download area.
     The credentials file has one line consisting of the <username>:<password> for accessing the P4 download area.
 
-ssh_key_file is the ssh public key file to use for root and scidb access to all hosts.
+ssh_key_file
+    is the single ssh public key file (typically ~/.ssh/id_rsa.pub)
+    used for both "root" and "scidb" access to all hosts.
+    It should be passphraseless.
+    You can create such a key with the "ssh-keygen" command.
 
-hostlist is a list of the cluster hosts, one per line, with the first line designating the SciDB coordinator.
+hostlist
+    a list of the cluster hosts, one per line, with the first line designating the SciDB coordinator.
 
-ntwork is the network mask of the cluster of the form W.X.Y.Z/D
+network
+    the network mask of the cluster in the form of W.X.Y.Z/D
 
-Configfile is the SciDB configuration file for the cluster.
+configfile
+    the SciDB configuration file for the cluster.
     Either write your own or use our new online tool called "configurator" that provides assistance
     selecting and building the initialization parameters file, config.ini.
     See https://github.com/paradigm4/configurator.
+================
+SETUP
 
-NOTE: At this time the user on each host that runs SciDB is hardcoded to "scidb".
+This script will modify the .bashrc file on all nodes.
+If you have already logged in on the coordinator,
+you will need to source the .bashrc file to setup
+environment variables for this new installation.
+Next time you login you will get these settings
+as a result of logging in.
