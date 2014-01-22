@@ -35,6 +35,8 @@ You must know the password for "root" and "scidb" on all nodes.
 
 SSH must be installed and running on all nodes.
 Particularly for SELinux, passphraseless ssh keys must be allowed.
+
+"Expect" needs to be installed on the coordinator node.
 ================
 COMMANDLINE OPTIONS
 
