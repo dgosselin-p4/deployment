@@ -20,30 +20,31 @@
 # END_COPYRIGHT
 #
 
-function centos6 ()
+function centos6()
 {
-    /sbin/chkconfig iptables off
-    /sbin/service iptables stop
-    if [ "1" == "${with_coordinator}" ]; then
-	yum install --enablerepo=scidb --enablerepo=scidb3rdparty -y scidb-${release}-all-coord
-    else
-	yum install --enablerepo=scidb --enablerepo=scidb3rdparty -y scidb-${release}-all
-    fi
+(echo <<EOF "[scidb3rdparty]
+name=SciDB 3rdparty repository
+baseurl=http://downloads.paradigm4.com/centos6.3/3rdparty
+gpgkey=http://downloads.paradigm4.com/key
+gpgcheck=1
+enabled=0"
+EOF
+) | tee scidb3rdparty.repo
+REPO_FILE=/etc/yum.repos.d/scidb3rdparty.repo
+mv scidb3rdparty.repo ${REPO_FILE}
+yum clean all
 }
 
-function ubuntu1204 ()
+function ubuntu1204()
 {
-    apt-get update
-    if [ "1" == "${with_coordinator}" ]; then
-	apt-get install -y scidb-${release}-all-coord
-    else
-	apt-get install -y scidb-${release}-all
-    fi
+wget -O- http://downloads.paradigm4.com/key | apt-key add -
+echo "deb http://downloads.paradigm4.com/ ubuntu12.04/3rdparty/" | tee scidb3rdparty.list
+REPO_FILE=/etc/apt/sources.list.d/scidb3rdparty.list
+mv scidb3rdparty.list ${REPO_FILE}
+apt-get update
 }
 
 OS=`./os_detect.sh`
-release=${1}
-with_coordinator=${2}
 
 if [ "${OS}" = "CentOS 6" ]; then
     centos6

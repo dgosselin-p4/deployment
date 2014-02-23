@@ -186,6 +186,14 @@ function provide_password_less_ssh_access ()
     remote "${username}" "${password}" "${hostname}" "./user_access.sh \\\"${username}\\\" \\\"${key}\\\""
 }
 
+# Register 3rdparty SciDB repository on remote host
+function register_3rdparty_scidb_repository ()
+{
+    local hostname=${1}
+    echo "Register SciDB 3rdparty repository on ${hostname}"
+    remote root "" ${hostname} "./register_3rdparty_scidb_repository.sh"
+}
+
 # Register released SciDB repository on remote host
 function register_scidb_repository ()
 {
@@ -222,6 +230,7 @@ function scidb_install_release()
     local hostname=${2}
     local with_coordinator=${3}
     register_scidb_repository "${release}" "${hostname}"
+    register_3rdparty_scidb_repository "${hostname}"
     remote root "" "${hostname}" "./scidb_install_release.sh ${release} ${with_coordinator}"
 }
 

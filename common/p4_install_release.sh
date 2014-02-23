@@ -15,7 +15,7 @@
 
 function centos6 ()
 {
-    yum install --enablerepo=scidb --enablerepo=p4 -y scidb-${release}-p4
+    yum install --enablerepo=scidb --enablerepo=scidb3rdparty --enablerepo=p4 -y scidb-${release}-p4
 }
 
 function ubuntu1204 ()
