@@ -1,9 +1,9 @@
-cluster_install_XX.YY.sh
+cluster_install.sh
 =======================
 
-This is a shell script and accompanying support scripts that allows you to install and setup a SciDB version XX.YY cluster from a single machine.
+This is a shell script and accompanying support scripts that allows you to install and setup a SciDB cluster from a single machine.
 
-./cluster_install_XX.YY.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile>
+./cluster_install.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile> <version>
   -s         - if installing SciDB without P4
   -p <credentials>
              - if installing SciDB with P4
@@ -16,6 +16,7 @@ This is a shell script and accompanying support scripts that allows you to insta
   network    - is the network mask the cluster is on
   	       Note: in the format of W.X.Y.Z/D
   configfile - SciDB configuration file
+  version    - version of SciDB you wish to install (ie. 13.12)
 
 ================
 DISCLAIMER
@@ -64,6 +65,10 @@ configfile
     Either write your own or use our new online tool called "configurator" that provides assistance
     selecting and building the initialization parameters file, config.ini.
     See https://github.com/paradigm4/configurator.
+
+version
+    the SciDB version you wish to install.
+    Versions 13.11 onwards are supported.
 ================
 SETUP
 
