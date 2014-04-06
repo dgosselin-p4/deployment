@@ -7,7 +7,7 @@
 # and may only be used with a valid Paradigm4 contract and in accord
 # with the terms and conditions specified by that contract.
 #
-# Copyright © 2010 - 2013 Paradigm4 Inc.
+# Copyright © 2010 - 2014 Paradigm4 Inc.
 # All Rights Reserved.
 #
 # END_COPYRIGHT
