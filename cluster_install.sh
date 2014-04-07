@@ -197,52 +197,13 @@ fi
 #
 echo
 echo '***********************************************************************************************'
-echo '* Enabling ssh access for root account from localhost to the cluster hosts with NO PASSPHRASE *'
+echo '* I hope you have run 'qualify' to setup for this install.                                    *'
 echo '***********************************************************************************************'
-echo
-sleep ${NAPTIME}
-SCIDB_VERSION=${version} ${here}/deploy.sh access root "" "${key}" `cat $hostlist`
-echo
-echo '***********************************************************************************************'
-echo '* Testing ssh access for root account from localhost to the cluster hosts with NO PASSPHRASE *'
-echo '***********************************************************************************************'
-echo
-for h in `cat $hostlist`
-do
-    if ! ssh -o PreferredAuthentications=publickey root@$h hostname ; then
-	echo
-	echo "Sorry, key authentication failed for root@$h."
-	echo "Please correct the problem and try again."
-	exit 1
-    fi
-done
-echo
-echo '************************************************************************************************'
-echo '* Enabling ssh access for scidb account from localhost to the cluster hosts with NO PASSPHRASE *'
-echo '************************************************************************************************'
-echo
-sleep ${NAPTIME}
-SCIDB_VERSION=${version} ${here}/deploy.sh access scidb "" "${key}" `cat $hostlist`
-echo
-echo '***********************************************************************************************'
-echo '* Testing ssh access for scidb account from localhost to the cluster hosts with NO PASSPHRASE *'
-echo '***********************************************************************************************'
-echo
-for h in `cat $hostlist`
-do
-    if ! ssh -o PreferredAuthentications=publickey scidb@$h hostname ; then
-	echo
-	echo "Sorry, key authentication failed for scidb@$h."
-	echo "Please correct the problem and try again."
-	exit 1
-    fi
-done
 echo
 echo '**********************************************************'
 echo '* Configure and start Postgresql on the coordinator host *'
 echo '**********************************************************'
 echo
-sleep ${NAPTIME}
 SCIDB_VERSION=${version} ${here}/deploy.sh prepare_postgresql scidb "" ${network} `head -1 $hostlist`
 echo
 echo '******************************************'

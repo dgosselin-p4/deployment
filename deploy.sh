@@ -156,7 +156,7 @@ fi
 }
 
 # Run command on remote host (with some prepared scripts/files)
-# 1) copy ./deployment/common to remote host to /tmp/deployment
+# 1) copy ./deployment/common to remote host to /tmp/${username}/deployment
 # 2) (If) specified files would be copied to remote host to /tmp/${username}/deployment
 # 3) execute ${4} command on remote host
 # 4) remove /tmp/${username}/deployment from remote host
@@ -240,7 +240,7 @@ function scidb_prepare_node ()
     local username="${1}"
     local password="${2}"
     local hostname=${3}
-    remote "${username}" "${password}" ${hostname} "./scidb_prepare.sh ${SCIDB_VER}"
+    remote root "" ${hostname} "su -l ${username} -c '/tmp/root/deployment/scidb_prepare.sh ${SCIDB_VER}'"
     remote root "" ${hostname} "cat config.ini > /opt/scidb/${SCIDB_VER}/etc/config.ini && chown ${username} /opt/scidb/${SCIDB_VER}/etc/config.ini" `readlink -f ./config.ini`
 }
 
@@ -253,15 +253,12 @@ function scidb_prepare_wcf ()
     local coordinator=${4}
     shift 4
 
-    # grab coordinator public key
-    local coordinator_key=`remote_no_password "${username}" "${password}" "${coordinator}" "${SSH} ${username}@${coordinator}  \"cat ~/.ssh/id_rsa.pub\"" | tail -1`
 
     # deposit config.ini to coordinator
     local hostname
     for hostname in ${coordinator} $@; do
         # generate scidb environment for username
 	scidb_prepare_node "${username}" "${password}" ${hostname} # not ideal to modify the environment
-	provide_password_less_ssh_access ${username} "${password}" "${coordinator_key}" ${hostname}
     done;
     remote root "" ${coordinator} "./scidb_prepare_coordinator.sh ${username} ${database} ${SCIDB_VER}" 
 }
