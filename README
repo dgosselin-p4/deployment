@@ -31,13 +31,10 @@ PREREQUISITES
 Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
 
 The user account "scidb" must be present on all nodes with the same password and home directory.
-The user account "scidb" must have sudo privileges on all nodes.
 You must know the password for "root" and "scidb" on all nodes.
 
 SSH must be installed and running on all nodes.
 Particularly for SELinux, passphraseless ssh keys must be allowed.
-
-"Expect" needs to be installed on the coordinator node.
 ================
 COMMANDLINE OPTIONS
 

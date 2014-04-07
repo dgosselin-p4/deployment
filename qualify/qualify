@@ -1,0 +1,210 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2014 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -u
+################################################################
+# This script will qualify your installation.
+# It is based off of your configuration file.
+#
+# It will:
+# 1. check that the localhost has what it takes to run this script
+# 2. check ssh on localhost
+# 3. check ssh as 'root' to the hosts specified in your configuration file
+# 4. check ports between hosts (host-X-host)
+# 4. check ssh as 'scidb' on the coordinator node to all hosts
+################################################################
+# Global values:
+#
+WHOAMI=installer
+################################################################
+# Processed values:
+MYDIR=`dirname ${0}`
+OStype=`awk 'NR == 1 {print $1}' /etc/issue`
+# OStype = Ubuntu CentOS Red
+################################################################
+# Temporary files and directories
+#   Note that any temp file or directory will be removed on exit
+trap on_exit EXIT
+function on_exit()
+{
+    rm -rf ${WORKING_DIR}
+}
+WORKING_DIR=`mktemp -d "/tmp/${USER}_INSTALL_XXXX"`
+################################################################
+# ARGUMENT PROCESSING
+function usage {
+    cat <<EOF
+
+Usage:
+$0 -h|--help
+$0 <config_file>
+EOF
+}
+if [ $# -lt 1 ]; then
+    echo
+    echo "Not enough arguments"
+    usage
+    exit 1
+fi
+case "${1}" in
+    -h|--help)
+	usage
+	exit 0
+	;;
+    -*)
+	echo
+	echo "Unknown switch: '${1}'"
+	usage
+	exit 1
+	;;
+esac
+config_file="${1}"
+if [ ! -f "${config_file}" ]; then
+    echo
+    echo "No configuration file at location '${config_file}'."
+    exit 1
+fi
+################################################################
+# Read in the config.ini file
+. ${MYDIR}/read_config_file
+################################################################
+# CHECK THAT USER IS READY
+echo
+echo "I am assuming you know the 'root' password on all the servers listed in your configuration file."
+echo "I also assume that a user 'scidb' is setup on all the servers listed in your configuration file"
+echo "and that you know the 'scidb' password."
+echo
+echo "If any of this is not true exit this script and make the necessary fixes."
+################################################################
+# CHECK THAT PRESENT MACHINE HAS WHAT IT TAKES TO RUN THIS SCRIPT
+#
+# ssh
+if ! type ssh >/dev/null 2>&1; then
+    echo
+    echo "You need ssh to be installed on this machine."
+    echo "Try again once installed."
+    exit 1
+fi
+# sshpass
+if ! type sshpass >/dev/null 2>&1; then
+    echo
+    echo "You need sshpass to be installed on this machine"
+    echo "Try again once installed."
+    echo
+    echo "You should be able to install AS ROOT by typing:"
+    case "${OStype}" in
+	Ubuntu)
+	    echo "  apt-get install -y sshpass"
+	    ;;
+	CentOS)
+	    echo "  rpm -U http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm"
+	    echo "  yum install -y sshpass"
+	    ;;
+	Red)
+	    echo "  rpm -U http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm"
+	    echo "  yum install -y sshpass"
+	    ;;
+    esac
+    exit 1
+fi
+# SELINUX
+if type getenforce >/dev/null 2>&1; then
+    SELINUX="`getenforce`"
+else
+    SELINUX=""
+fi
+################################################################
+# CHECK SSH ON LOCAL HOST
+${MYDIR}/check_ssh_localhost ${host_file}
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+# check_ssh_localhost saved out which key to use in the file 'kp'
+kp=`cat ~/.ssh/kp`
+################################################################
+# Run most things on the installer
+# only check_ssh_2hosts as scidb is run on the coordinator
+if [ "${WHOAMI}" = "installer" ]; then
+################################################################
+# CHECK SSH TO HOSTS AS ROOT
+    ${MYDIR}/check_ssh_2hosts root ${host_file} ${kp}.pub
+    if [ $? -ne 0 ]; then
+	exit 1
+    fi
+################################################################
+# CHECK SCIDB PORTS BETWEEN ALL NODES
+    ${MYDIR}/check_SciDB_ports ${host_file} ${base_port} ${max_inst}
+    if [ $? -ne 0 ]; then
+	exit 1
+    fi
+################################################################
+# CHECK COORDINATOR NODE
+    echo
+    echo "...................................................................................."
+    echo "Done qualifying this machine for installing SciDB."
+    echo "...................................................................................."
+    echo "Now we need to qualify the coordinator '${coordinator}' that it can run SciDB."
+    echo "...................................................................................."
+    echo "I am going to copy a number of scripts to scidb@${coordinator}."
+    echo "These scripts will be in 'qualifyDir' in scidb's home directory on '${coordinator}'."
+    echo
+    echo "After the copy I will give you instructions on how to run qualify on the coordinator."
+    echo "...................................................................................."
+    export SSHPASS=""
+    echo -n "Please enter the password for 'scidb' on the coordinator ${coordinator}: "
+    read -s -e SSHPASS
+    echo
+    sshpass -e ssh scidb@${coordinator} rm -rf qualifyDir || true
+    sshpass -e ssh scidb@${coordinator} mkdir qualifyDir || true
+    for f in qualify checkPorts check_port check_ssh_localhost check_ssh_2hosts read_config_file ${config_file}
+    do
+	echo scp $f scidb@${coordinator}:qualifyDir
+	sshpass -e scp $f scidb@${coordinator}:qualifyDir
+    done
+    sshpass -e ssh scidb@${coordinator} sed -i 's/WHOAMI=installer/WHOAMI=coordinator/' qualifyDir/qualify
+    config_file_there=${config_file##/}
+    echo "............................................................................"
+    echo
+    echo "You are going to log into the coordinator and run the qualify script there."
+    echo "The reason for this is to have direct tty access."
+    echo
+    echo "Please:"
+    echo "  ssh scidb@${coordinator}"
+    echo "  cd qualifyDir"
+    echo "  ./qualify ${config_file_there}"
+    echo
+    echo "Once the qualify script runs without errors, you are ready to install SciDB."
+    echo "............................................................................"
+    exit 0
+else
+################################################################
+# CHECK SSH TO HOSTS AS SCIDB ON COORDINATOR NODE
+    ${MYDIR}/check_ssh_2hosts scidb ${host_file} ${kp}.pub
+    if [ $? -ne 0 ]; then
+	exit 1
+    fi
+fi
+################################################################
+# DONE
+echo "......................................."
+echo "Done qualifying all nodes to run SciDB."
+echo "......................................."
+exit 0
