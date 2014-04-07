@@ -166,13 +166,13 @@ local username=${1}
 local password="${2}"
 local hostname=${3}
 local files=${5-""}
-remote_no_password "${username}" "${password}" "${hostname}" "${SSH} ${username}@${hostname}  \"rm -rf /tmp/${username}/deployment && mkdir -p /tmp/${username}\""
-remote_no_password "${username}" "${password}" "${hostname}" "${SCP} ${bin_path} ${username}@${hostname}:/tmp/${username}/deployment"
+${SSH} ${username}@${hostname}  "rm -rf /tmp/${username}/deployment && mkdir -p /tmp/${username}"
+${SCP} ${bin_path} ${username}@${hostname}:/tmp/${username}/deployment
 if [ -n "${files}" ]; then
-    remote_no_password "${username}" "${password}" "${hostname}" "${SCP} ${files} ${username}@${hostname}:/tmp/${username}/deployment"
+    ${SCP} ${files} ${username}@${hostname}:/tmp/${username}/deployment
 fi;
-remote_no_password "${username}" "${password}" "${hostname}" "${SSH} ${username}@${hostname} \"cd /tmp/${username}/deployment && ${4}\""
-remote_no_password "${username}" "${password}" "${hostname}" "${SSH} ${username}@${hostname}  \"rm -rf /tmp/${username}/deployment\""
+${SSH} ${username}@${hostname} "cd /tmp/${username}/deployment && ${4}"
+${SSH} ${username}@${hostname} "rm -rf /tmp/${username}/deployment"
 }
 
 # Provide password-less access to remote host
