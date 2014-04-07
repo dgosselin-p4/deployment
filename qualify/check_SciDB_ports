@@ -106,6 +106,7 @@ do
     ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "/tmp/checkPorts /tmp/host_file ${base_port} ${max_port}" >> ${WORKING_DIR}/CheckPorts.log 2>&1 || true
 done < ${host_file}
 sed -i -e '/OK/d' -e '/Connection refused/d' ${WORKING_DIR}/CheckPorts.log
+sed -i -e '/known hosts/d' ${WORKING_DIR}/CheckPorts.log
 #
 # Was there a problem?
 #
