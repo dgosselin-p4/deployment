@@ -1,3 +1,6 @@
+To qualify your cluster please 'cd qualify' and run 'qualify <configfile>'.
+SSH access is not longer configured in cluster_install but instead in qualify.
+
 cluster_install.sh
 =======================
 
