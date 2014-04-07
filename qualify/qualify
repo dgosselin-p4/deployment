@@ -29,7 +29,7 @@ set -u
 # 2. check ssh on localhost
 # 3. check ssh as 'root' to the hosts specified in your configuration file
 # 4. check ports between hosts (host-X-host)
-# 4. check ssh as 'scidb' on the coordinator node to all hosts
+# 5. check ssh as 'scidb' on the coordinator node to all hosts
 ################################################################
 # Global values:
 #
@@ -180,7 +180,7 @@ if [ "${WHOAMI}" = "installer" ]; then
 	sshpass -e scp $f scidb@${coordinator}:qualifyDir
     done
     sshpass -e ssh scidb@${coordinator} sed -i 's/WHOAMI=installer/WHOAMI=coordinator/' qualifyDir/qualify
-    config_file_there=${config_file##/}
+    config_file_there=`basename ${config_file}`
     echo "............................................................................"
     echo
     echo "You are going to log into the coordinator and run the qualify script there."
