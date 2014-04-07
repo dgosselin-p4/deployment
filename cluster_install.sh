@@ -19,18 +19,14 @@
 #
 # END_COPYRIGHT
 #
-set -eu
+set -u
 ################################################################
 # Global variables
 #
-# detect directory where we run
-here="$(dirname $0)"
-#
-SCP="scp -r -q -o StrictHostKeyChecking=no"
-SSH="ssh -o StrictHostKeyChecking=no"
-#
 NAPTIME=3
-#
+################################################################
+# Processed values:
+MYDIR=`dirname ${0}`
 ################################################################
 # Functions
 function print_usage ()
@@ -46,7 +42,6 @@ function print_usage ()
     echo "             - install both SciDB and P4"
     echo "  ssh_key_file"
     echo "             - the ssh public key file to use for root and scidb access to all hosts"
-    echo "               Note: either use a keyring or make the key passphrase-less"
     echo "  hostlist   - a file listing the hosts in the cluster"
     echo "             - the first line is the coordinator"
     echo "  network    - is the network mask the cluster is on"
@@ -96,33 +91,6 @@ if [ $# -ne 5 ];then
     echo "ERROR: Wrong number of arguments."
     print_usage
     exit 1
-fi
-# Must have chosen either -s or -p or both
-if [ ${installSciDB} -eq 0 -a ${installP4} -eq 0 ];then
-    echo
-    echo "ERROR: Unknown installation type."
-    echo "       You need to pick one:"
-    echo "         install SciDB (-s)"
-    echo "         install P4 (-p)"
-    echo "         install SciDB and P4 (-s -p)"
-    print_usage
-    exit 1
-fi
-if [ ${installSciDB} -eq 0 - a ${installP4} -eq 1 ];then
-    echo
-    echo "You have elected to install P4 without installing SciDB."
-    echo "Presumably you have already installed SciDB."
-    echo "Note that this mode will not change the database nor the configuration file."
-    echo
-    echo -n "Is this correct ? [y|n] "
-    read -e yes_no
-    echo
-    if [[ ${yes_no} =~ ^[yY] ]]; then
-	:
-    else
-	echo "Exiting."
-	exit 1
-    fi
 fi
 # CREDENTIALS
 if [ ${installP4} -eq 1 ];then
@@ -213,6 +181,42 @@ if [ "${database}" = "" ];then
     echo "ERROR: Invalid configuration file. Can not find database name."
     exit 1
 fi
+coordinator="`head -1 $hostlist`"
+################################################################
+# CHECK ARGUMENTS
+# Must have chosen either -s or -p or both
+if [ ${installSciDB} -eq 0 -a ${installP4} -eq 0 ];then
+    echo
+    echo "ERROR: Unknown installation type."
+    echo "       You need to pick one:"
+    echo "         install SciDB (-s)"
+    echo "         install P4 (-p)"
+    echo "         install SciDB and P4 (-s -p)"
+    print_usage
+    exit 1
+fi
+if [ ${installSciDB} -eq 0 -a ${installP4} -eq 1 ];then
+    #
+    # Check if they have SciDB installed
+    #
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@${coordinator} ls -d /opt/scidb/${version}/etc > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+	echo
+	echo "You have elected to install P4 without installing SciDB."
+	echo "BUT there is no SciDB installation."
+	echo
+	echo -n "Would you like me to also install SciDB ? [y|n] "
+	read -e yes_no
+	echo
+	if [[ ${yes_no} =~ ^[yY] ]]; then
+	    installSciDB=1
+	else
+	    echo "There is no point in install P4 without SciDB."
+	    echo "Exiting."
+	    exit 1
+	fi
+    fi
+fi
 ################################################################
 # Main
 #
@@ -238,14 +242,14 @@ if [ ${installSciDB} -eq 1 ]; then
     echo '* Configure and start Postgresql on the coordinator host *'
     echo '**********************************************************'
     echo
-    SCIDB_VERSION=${version} ${here}/deploy.sh prepare_postgresql scidb "" ${network} `head -1 $hostlist`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh prepare_postgresql scidb "" ${network} ${coordinator}
     echo
     echo '******************************************'
     echo '* Installing SciDB to the cluster hosts. *'
     echo '******************************************'
     echo
     sleep ${NAPTIME}
-    SCIDB_VERSION=${version} ${here}/deploy.sh scidb_install_release ${version} `cat $hostlist`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_install_release ${version} `cat $hostlist`
 fi
 if [ ${installP4} -eq 1 ];then
     echo
@@ -255,12 +259,12 @@ if [ ${installP4} -eq 1 ];then
     echo
     sleep ${NAPTIME}
     if [ -f "${credentials}" ];then
-	cp -f "${credentials}" "${here}/common/p4_creds.txt"
+	cp -f "${credentials}" "${MYDIR}/common/p4_creds.txt"
     else
-	cp -f "${here}/p4_creds.txt" "${here}/common/p4_creds.txt"
+	cp -f "${MYDIR}/p4_creds.txt" "${MYDIR}/common/p4_creds.txt"
     fi
-    SCIDB_VERSION=${version} ${here}/deploy.sh p4_install_release ${version} `cat $hostlist`
-    rm -f "${here}/common/p4_creds.txt"
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh p4_install_release ${version} `cat $hostlist`
+    rm -f "${MYDIR}/common/p4_creds.txt"
 fi
 if [ ${installSciDB} -eq 1 ]; then
     echo
@@ -272,7 +276,7 @@ if [ ${installSciDB} -eq 1 ]; then
     if [ "${config_file}" != "config.ini" ];then
 	cp -f "${config_file}" config.ini
     fi
-    SCIDB_VERSION=${version} ${here}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat $hostlist`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat ${host_file}`
     if [ "${config_file}" != "config.ini" ];then
 	rm -f config.ini
     fi
