@@ -37,11 +37,13 @@ function print_usage ()
 {
     echo ""
     echo "${0} [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile> <version>"
-    echo "  -s         - if installing SciDB without P4"
+    echo "  -s         - install SciDB"
     echo "  -p <credentials>"
-    echo "             - if installing SciDB with P4"
+    echo "             - install P4"
     echo "               <credentials> is a file with one line of the credentials"
     echo "                (<username>:<password>) to access the P4 downloads."
+    echo "  -s -p <credentials>"
+    echo "             - install both SciDB and P4"
     echo "  ssh_key_file"
     echo "             - the ssh public key file to use for root and scidb access to all hosts"
     echo "               Note: either use a keyring or make the key passphrase-less"
@@ -54,7 +56,8 @@ function print_usage ()
 ################################################################
 # Argument processing
 #
-installation=""
+installSciDB=0
+installP4=0
 credentials=""
 while [ $# -gt 0 ]; do
     case ${1} in
@@ -63,7 +66,7 @@ while [ $# -gt 0 ]; do
 	    exit 0
 	    ;;
 	-s|--scidb)
-	    installation="s"
+	    installSciDB=1
 	    ;;
 	-[pP]|--[pP]4)
 	    if [ $# -lt 2 ]; then
@@ -73,7 +76,7 @@ while [ $# -gt 0 ]; do
 		exit 1
 	    fi
 	    credentials="${2}"
-	    installation="p"
+	    installP4=1
 	    shift
 	    ;;
 	-*)
@@ -94,17 +97,35 @@ if [ $# -ne 5 ];then
     print_usage
     exit 1
 fi
-# Must have chosen either -s or -p
-if [ "${installation}" != "s" -a "${installation}" != "p" ];then
+# Must have chosen either -s or -p or both
+if [ ${installSciDB} -eq 0 -a ${installP4} -eq 0 ];then
     echo
     echo "ERROR: Unknown installation type."
-    echo "       You need to pick SciDB with or without P4."
-    echo "       [-s|-p credentials]"
+    echo "       You need to pick one:"
+    echo "         install SciDB (-s)"
+    echo "         install P4 (-p)"
+    echo "         install SciDB and P4 (-s -p)"
     print_usage
     exit 1
 fi
+if [ ${installSciDB} -eq 0 - a ${installP4} -eq 1 ];then
+    echo
+    echo "You have elected to install P4 without installing SciDB."
+    echo "Presumably you have already installed SciDB."
+    echo "Note that this mode will not change the database nor the configuration file."
+    echo
+    echo -n "Is this correct ? [y|n] "
+    read -e yes_no
+    echo
+    if [[ ${yes_no} =~ ^[yY] ]]; then
+	:
+    else
+	echo "Exiting."
+	exit 1
+    fi
+fi
 # CREDENTIALS
-if [ "${installation}" = "p" ];then
+if [ ${installP4} -eq 1 ];then
     if [ ! -f "${credentials}" ];then
 	echo
 	echo "ERROR: Credentials '${credentials}' is not readable."
@@ -211,20 +232,22 @@ else
     echo "Continue at your own risk. The odds are this script will fail."
     sleep 5
 fi
-echo
-echo '**********************************************************'
-echo '* Configure and start Postgresql on the coordinator host *'
-echo '**********************************************************'
-echo
-SCIDB_VERSION=${version} ${here}/deploy.sh prepare_postgresql scidb "" ${network} `head -1 $hostlist`
-echo
-echo '******************************************'
-echo '* Installing SciDB to the cluster hosts. *'
-echo '******************************************'
-echo
-sleep ${NAPTIME}
-SCIDB_VERSION=${version} ${here}/deploy.sh scidb_install_release ${version} `cat $hostlist`
-if [ "${installation}" = "p" ];then
+if [ ${installSciDB} -eq 1 ]; then
+    echo
+    echo '**********************************************************'
+    echo '* Configure and start Postgresql on the coordinator host *'
+    echo '**********************************************************'
+    echo
+    SCIDB_VERSION=${version} ${here}/deploy.sh prepare_postgresql scidb "" ${network} `head -1 $hostlist`
+    echo
+    echo '******************************************'
+    echo '* Installing SciDB to the cluster hosts. *'
+    echo '******************************************'
+    echo
+    sleep ${NAPTIME}
+    SCIDB_VERSION=${version} ${here}/deploy.sh scidb_install_release ${version} `cat $hostlist`
+fi
+if [ ${installP4} -eq 1 ];then
     echo
     echo '***************************************'
     echo '* Installing P4 to the cluster hosts. *'
@@ -239,19 +262,18 @@ if [ "${installation}" = "p" ];then
     SCIDB_VERSION=${version} ${here}/deploy.sh p4_install_release ${version} `cat $hostlist`
     rm -f "${here}/common/p4_creds.txt"
 fi
-echo
-echo '********************************************************************'
-echo '* Configure SciDB to run under user scidb                          *'
-echo '*   using mydb as the Postgres role/database_name/password,        *'
-echo '*   using /home/scidb/mydb-DB as the root for SciDB storage,       *'
-echo '*   using config file: ' "${config_file}" '.                       *'
-echo '********************************************************************'
-echo
-sleep ${NAPTIME}
-if [ "${config_file}" != "config.ini" ];then
-    cp -f "${config_file}" config.ini
-fi
-SCIDB_VERSION=${version} ${here}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat $hostlist`
-if [ "${config_file}" != "config.ini" ];then
-    rm -f config.ini
+if [ ${installSciDB} -eq 1 ]; then
+    echo
+    echo '********************************************************************'
+    echo '* Configure SciDB to run under user scidb                          *'
+    echo '********************************************************************'
+    echo
+    sleep ${NAPTIME}
+    if [ "${config_file}" != "config.ini" ];then
+	cp -f "${config_file}" config.ini
+    fi
+    SCIDB_VERSION=${version} ${here}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat $hostlist`
+    if [ "${config_file}" != "config.ini" ];then
+	rm -f config.ini
+    fi
 fi
