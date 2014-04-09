@@ -79,6 +79,6 @@ fi
 # SETUP SSH KEY
 . ${MYDIR}/setup_ssh_key
 ################################################################
-# CHECK SSH TO HOSTS AS ROOT
+# CHECK SSH TO HOSTS AS USER
 export SSHPASS=""
 . ${MYDIR}/check_ssh_2hosts
