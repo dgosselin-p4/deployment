@@ -121,7 +121,22 @@ shift
 #   read_config_file is source so that it sets variables in the environment
 WORKING_DIR=${MYDIR}
 . qualify/read_config_file
-
+################################################################
+# MUST BE RUN AS ROOT
+if [ `id -u` -ne 0 ]; then
+    echo
+    echo "This script must be run as root."
+    echo "Please login or su -l as root and try again."
+    exit 1
+fi
+################################################################
+# MUST BE RUN ON THE COORDINATOR
+if [ "$HOSTNAME" != "${coordinator}" ]; then
+    echo
+    echo "This script must be run on the coordinator '${coordinator}'."
+    echo "Please login to the coordinator as root and try again."
+    exit 1
+fi
 ################################################################
 # CHECK ARGUMENTS
 # Must have chosen either -s or -p or both
@@ -139,8 +154,7 @@ if [ ${installSciDB} -eq 0 -a ${installP4} -eq 1 ];then
     #
     # Check if they have SciDB installed
     #
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@${coordinator} ls -d /opt/scidb/${version}/etc > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
+    if [ ! -d /opt/scidb/${version}/etc ]; then
 	echo
 	echo "You have elected to install P4 without installing SciDB."
 	echo "BUT there is no SciDB installation."
