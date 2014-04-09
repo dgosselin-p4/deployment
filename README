@@ -3,7 +3,7 @@ cluster_install.sh
 
 This shell script along with supporting scripts allows you to install and setup a SciDB cluster from the coordinator node.
 
-This script must be run as root on the coordinator.
+This script must be run as root on the coordinator (a login shell such as "su -l root").
 Before installing this script will qualify your cluster.
 This includes setting up password-less ssh keys and turning off firewalls.
 
