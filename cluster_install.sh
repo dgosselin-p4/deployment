@@ -202,7 +202,7 @@ fi
 # RUN QUALIFY
 #
 cd qualify
-./qualify ${config_file}
+./qualify ../${config_file}
 cd ../
 ################
 # HERE WE GO
