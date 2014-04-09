@@ -32,7 +32,7 @@ MYDIR=`dirname ${0}`
 function print_usage ()
 {
     echo ""
-    echo "${0} [-s|-p <credentials>] <network> <configfile> <version>"
+    echo "${0} [-s|-p <credentials>] <network> <configfile>"
     echo "  -s         - install SciDB"
     echo "  -p <credentials>"
     echo "             - install P4"
@@ -42,7 +42,6 @@ function print_usage ()
     echo "             - install both SciDB and P4"
     echo "  network    - is the network mask the cluster is on"
     echo "  configfile - SciDB configuration file"
-    echo "  version    - version of SciDB you wish to install (ie. 13.12)"
 }
 ################################################################
 # Argument processing
@@ -82,7 +81,7 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-if [ $# -ne 3 ];then
+if [ $# -ne 2 ];then
     echo
     echo "ERROR: Wrong number of arguments."
     print_usage
@@ -114,29 +113,6 @@ if [ ! -f "${config_file}" ];then
     echo
     echo "ERROR: Configuration file '${config_file}' is not readable."
     print_usage
-    exit 1
-fi
-shift
-# VERSION
-version="${1}"
-if [[ ${version} =~ ^[0-9]{2}\.[0-9]{1,2}$ ]]; then
-    VMajor=${version%.*}
-    VMinor=${version#*.}
-    if [ ${VMajor} -lt 13 ]; then
-	echo
-	echo "ERROR: This script does not support SciDB versions less than 13.11"
-	exit 1
-    fi
-    if [ ${VMajor} -eq 13 ]; then
-	if [ ${VMinor} -lt 11 ]; then
-	    echo
-	    echo "ERROR: This script does not support SciDB versions less than 13.11"
-	    exit 1
-	fi
-    fi
-else
-    echo
-    echo "ERROR: Not a valid version number."
     exit 1
 fi
 shift
