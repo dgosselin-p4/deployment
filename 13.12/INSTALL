@@ -1,0 +1,5 @@
+To use cluster_install_XX.YY.sh either:
+- clone this repo
+- or download the ZIP file (click "Download ZIP" button on bottom right of web page).
+
+Then run cluster_install_XX.YY.sh from the top level (see README for further documentation).
