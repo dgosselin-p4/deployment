@@ -32,7 +32,7 @@ MYDIR=`dirname ${0}`
 function print_usage ()
 {
     echo ""
-    echo "${0} [-s|-p <credentials>] <hostlist> <network> <configfile> <version>"
+    echo "${0} [-s|-p <credentials>] <network> <configfile> <version>"
     echo "  -s         - install SciDB"
     echo "  -p <credentials>"
     echo "             - install P4"
@@ -40,8 +40,6 @@ function print_usage ()
     echo "                (<username>:<password>) to access the P4 downloads."
     echo "  -s -p <credentials>"
     echo "             - install both SciDB and P4"
-    echo "  hostlist   - a file listing the hosts in the cluster"
-    echo "             - the first line is the coordinator"
     echo "  network    - is the network mask the cluster is on"
     echo "  configfile - SciDB configuration file"
     echo "  version    - version of SciDB you wish to install (ie. 13.12)"
@@ -84,7 +82,7 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-if [ $# -ne 4 ];then
+if [ $# -ne 3 ];then
     echo
     echo "ERROR: Wrong number of arguments."
     print_usage
@@ -99,15 +97,6 @@ if [ ${installP4} -eq 1 ];then
 	exit 1
     fi
 fi
-# LIST OF HOSTS
-hostlist="${1}"
-if [ ! -f "$hostlist" ];then
-    echo
-    echo "ERROR: Hostlist '$hostlist' is not readable."
-    print_usage
-    exit 1
-fi
-shift
 # NETWORK
 network="${1}"
 # should be of the form d.d.d.d/d
@@ -152,17 +141,11 @@ else
 fi
 shift
 ################################################################
-# Read configuration file to get the name of the database
-# Find line of "[database]" and extract name within the brackets
-#
-database=""
-database="`grep -E '^\[.*\]$' ${config_file} | sed -e 's/\[//' -e 's/\]//'`"
-if [ "${database}" = "" ];then
-    echo
-    echo "ERROR: Invalid configuration file. Can not find database name."
-    exit 1
-fi
-coordinator="`head -1 $hostlist`"
+# Read in the config.ini file
+#   read_config_file is source so that it sets variables in the environment
+WORKING_DIR=${MYDIR}
+. qualify/read_config_file
+
 ################################################################
 # CHECK ARGUMENTS
 # Must have chosen either -s or -p or both
@@ -219,7 +202,7 @@ if [ ${installSciDB} -eq 1 ]; then
     echo '******************************************'
     echo
     sleep ${NAPTIME}
-    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_install_release ${version} `cat $hostlist`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_install_release ${version} `cat $host_file`
 fi
 if [ ${installP4} -eq 1 ];then
     echo
@@ -233,7 +216,7 @@ if [ ${installP4} -eq 1 ];then
     else
 	cp -f "${MYDIR}/p4_creds.txt" "${MYDIR}/common/p4_creds.txt"
     fi
-    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh p4_install_release ${version} `cat $hostlist`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh p4_install_release ${version} `cat $host_file`
     rm -f "${MYDIR}/common/p4_creds.txt"
 fi
 if [ ${installSciDB} -eq 1 ]; then
@@ -246,7 +229,7 @@ if [ ${installSciDB} -eq 1 ]; then
     if [ "${config_file}" != "config.ini" ];then
 	cp -f "${config_file}" config.ini
     fi
-    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat ${hostlist}`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_prepare_wcf scidb "" "${cluster_name}" `cat $host_file`
     if [ "${config_file}" != "config.ini" ];then
 	rm -f config.ini
     fi
