@@ -1,25 +1,22 @@
-To qualify your cluster please 'cd qualify' and run 'qualify <configfile>'.
-SSH access is not longer configured in cluster_install but instead in qualify.
-
 cluster_install.sh
 =======================
 
-This is a shell script and accompanying support scripts that allows you to install and setup a SciDB cluster from a single machine.
+This shell script along with supporting scripts allows you to install and setup a SciDB cluster from the coordinator node.
 
-./cluster_install.sh [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile> <version>
-  -s         - if installing SciDB without P4
+This script must be run as root on the coordinator.
+Before installing this script will qualify your cluster.
+This includes setting up password-less ssh keys and turning off firewalls.
+
+./cluster_install.sh [-s|-p <credentials>] <network> <configfile>
+  -s         - install SciDB
   -p <credentials>
-             - if installing SciDB with P4
+             - install P4
                <credentials> is a file with one line of the credentials (<username>:<password>) to access the P4 downloads.
-  ssh_key_file
-             - a single ssh public key file used for both root and scidb access to all hosts
-               Note: make the key passphrase-less
-  hostlist   - a file listing the hosts in the cluster
-               Note: the first host is the coordinator
+  -s -p <credentials>
+             - install both SciDB and Pr
   network    - is the network mask the cluster is on
   	       Note: in the format of W.X.Y.Z/D
   configfile - SciDB configuration file
-  version    - version of SciDB you wish to install (ie. 13.12)
 
 ================
 DISCLAIMER
@@ -32,6 +29,8 @@ Read the SECURITY file to see what security issues this script will cause.
 PREREQUISITES
 
 Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
+
+This script must be run as root on the coordinator node.
 
 The user account "scidb" must be present on all nodes with the same password and home directory.
 You must know the password for "root" and "scidb" on all nodes.
@@ -48,15 +47,6 @@ This option selects what type of installation you are doing.
     The -p must be followed with a filename that has the credentials for accessing the P4 download area.
     The credentials file has one line consisting of the <username>:<password> for accessing the P4 download area.
 
-ssh_key_file
-    is the single ssh public key file (typically ~/.ssh/id_rsa.pub)
-    used for both "root" and "scidb" access to all hosts.
-    It should be passphraseless.
-    You can create such a key with the "ssh-keygen" command.
-
-hostlist
-    a list of the cluster hosts, one per line, with the first line designating the SciDB coordinator.
-
 network
     the network mask of the cluster in the form of W.X.Y.Z/D
 
@@ -65,10 +55,6 @@ configfile
     Either write your own or use our new online tool called "configurator" that provides assistance
     selecting and building the initialization parameters file, config.ini.
     See https://github.com/paradigm4/configurator.
-
-version
-    the SciDB version you wish to install.
-    Versions 13.11 onwards are supported.
 ================
 SETUP
 

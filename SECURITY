@@ -1,9 +1,15 @@
-These are known security problems that cluster_install.sh creates.
+These are the known security issues that cluster_install.sh creates.
 
-* Passwordless ssh as user "root" is setup between the local machine you are running this cluster install from. Additionally this ssh is run with StrictHostKeyChecking=no.
+* Passwordless ssh as user "root" is setup between the coordinator and all the nodes in the cluster.
 
-* Passwordless ssh as user "scidb" is setup between the coordinator host and the rest of the hosts.
+* Passwordless ssh as user "scidb" is setup between the coordinator host and all the nodes in the cluster.
+
+* ssh is run with StrictHostKeyChecking=no.
+
+* All firewalls on all nodes are disabled permanently.
 
 * The virbr0 network interface is shutdown.
 
 * User scidb's .bashrc file is modified.
+
+If any of the above is unacceptable do not use cluster_install.sh
