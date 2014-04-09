@@ -32,7 +32,7 @@ MYDIR=`dirname ${0}`
 function print_usage ()
 {
     echo ""
-    echo "${0} [-s|-p <credentials>] <ssh_key_file> <hostlist> <network> <configfile> <version>"
+    echo "${0} [-s|-p <credentials>] <hostlist> <network> <configfile> <version>"
     echo "  -s         - install SciDB"
     echo "  -p <credentials>"
     echo "             - install P4"
@@ -40,8 +40,6 @@ function print_usage ()
     echo "                (<username>:<password>) to access the P4 downloads."
     echo "  -s -p <credentials>"
     echo "             - install both SciDB and P4"
-    echo "  ssh_key_file"
-    echo "             - the ssh public key file to use for root and scidb access to all hosts"
     echo "  hostlist   - a file listing the hosts in the cluster"
     echo "             - the first line is the coordinator"
     echo "  network    - is the network mask the cluster is on"
@@ -86,7 +84,7 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-if [ $# -ne 5 ];then
+if [ $# -ne 4 ];then
     echo
     echo "ERROR: Wrong number of arguments."
     print_usage
@@ -101,23 +99,6 @@ if [ ${installP4} -eq 1 ];then
 	exit 1
     fi
 fi
-# SSH KEY
-key="${1}"
-if [ ! -f "$key" ];then
-    echo
-    echo "ERROR: Keyfile '$key' is not readable."
-    print_usage
-    exit 1
-fi
-function notKey () {
-    echo
-    echo "ERROR: Keyfile '$key' is not a public key file."
-    print_usage
-    exit 1
-}
-ssh-keygen -l -f "${key}" > /dev/null || notKey
-key=`cat $key`
-shift
 # LIST OF HOSTS
 hostlist="${1}"
 if [ ! -f "$hostlist" ];then
