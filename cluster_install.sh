@@ -276,7 +276,7 @@ if [ ${installSciDB} -eq 1 ]; then
     if [ "${config_file}" != "config.ini" ];then
 	cp -f "${config_file}" config.ini
     fi
-    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat ${host_file}`
+    SCIDB_VERSION=${version} ${MYDIR}/deploy.sh scidb_prepare_wcf scidb "" "${database}" `cat ${hostlist}`
     if [ "${config_file}" != "config.ini" ];then
 	rm -f config.ini
     fi
