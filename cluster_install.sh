@@ -199,24 +199,13 @@ if [ ${installSciDB} -eq 0 -a ${installP4} -eq 1 ];then
     fi
 fi
 ################################################################
-# Main
+# RUN QUALIFY
 #
-echo '****************************************************************************'
-echo '* I hope you have run "qualify" to setup for this install                  *'
-echo '* (cd qualify ; ./qualify <configfile>)                                    *'
-echo '*                                                                          *'
-echo '* If you have not qualified your cluster this install script will not work.*'
-echo '****************************************************************************'
-echo
-echo -n "Have you qualified your cluster? [y|n] "
-read -e yes_no
-echo
-if [[ ${yes_no} =~ ^[yY] ]]; then
-    echo "Then we shall proceed."
-else
-    echo "Continue at your own risk. The odds are this script will fail."
-    sleep 5
-fi
+cd qualify
+./qualify ${config_file}
+cd ../
+################
+# HERE WE GO
 if [ ${installSciDB} -eq 1 ]; then
     echo
     echo '**********************************************************'
