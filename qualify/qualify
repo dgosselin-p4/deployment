@@ -149,7 +149,7 @@ read -e -p "Is this acceptable? [y|n] " yes_no
 if [[ ${yes_no} =~ ^[yY] ]]; then
     :
 else
-    exit 0
+    exit 1
 fi
 ################################################################
 # CHECK THAT PRESENT MACHINE HAS SSH
