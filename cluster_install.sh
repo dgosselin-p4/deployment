@@ -162,6 +162,7 @@ fi
 #
 cd qualify
 ./qualify ../${config_file}
+if [ $? -ne 0 ]; then exit 1; fi
 cd ../
 ################
 # HERE WE GO
