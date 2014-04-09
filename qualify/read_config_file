@@ -26,6 +26,14 @@
 # It parses the configuration file and sets variables appropriately in the present shell.
 # The variable config_file should be set.
 #
+# It also creates a list of hosts in ${WORKING_DIR}/host_file
+#
+cluster_name="`grep -E '^\[.*\]$' ${config_file} | sed -e 's/\[//' -e 's/\]//'`"
+if [ "${cluster_name}" = "" ];then
+    echo
+    echo "ERROR: Invalid configuration file. Can not find cluster name."
+    exit 1
+fi
 ################
 # install_root
 #   Full path to the SciDB installation directory.
@@ -45,6 +53,11 @@ if [ ${#COUNT[@]} -ne 1 ]; then
     echo "This is not allowed. Please correct and try again."
     exit 1
 fi
+################
+# version
+#   From install_root which must be /opt/scidb/<version>
+version=${install_root##/opt/scidb/}
+version=${version%%/*}
 ################
 # metadata
 #   Full path to the SciDB metadata definition file.
@@ -191,6 +204,9 @@ fi
 # ssh-port
 #   The port that ssh uses for communications with the cluster (optional, default=22).
 ssh_port="`awk -F= '$1 ~ /^ssh-port/ {print $2}' ${config_file}`"
+if [ -z "$ssh_port" ]; then
+    ssh_port=22
+fi
 ################
 # key-file-list
 #   Comma separated list of filenames that include keys for ssh authentication.

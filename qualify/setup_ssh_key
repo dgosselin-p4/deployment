@@ -1,0 +1,111 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2014 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -u
+################################################################
+#
+# This file is sourced.
+#
+################################################################
+# SETUP SSH KEY
+#
+# Look for the .ssh directory
+if [ ! -d ~/.ssh ]; then
+    echo
+    echo "$USER does not have a ssh key pair."
+    echo
+    echo "Installation requires a password-less ssh key"
+    echo "to avoid having to enter a password for each use of the key."
+    echo
+    echo "Generating one now..."
+    echo
+    ssh-keygen -N "" -t rsa -f ~/.ssh/id_rsa
+fi
+# Set permission of .ssh directory just in case
+chmod 700 ~/.ssh
+#
+# Check that a pair exists
+kp=""
+for p in id_rsa id_dsa id_ecdsa id_scidb
+do
+    if [ -f ~/.ssh/${p} -a -f ~/.ssh/${p}.pub ]; then
+	if [ -z "${kp}" ]; then
+	    kp="${p}"
+	else
+	    kp="${kp} ${p}"
+	fi
+    fi
+done
+if [ -z "${kp}" ]; then
+    echo
+    echo "$USER does not have any valid ssh key pairs."
+    echo
+    echo "Generating one now..."
+    echo
+    rm -f ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+    ssh-keygen -N "" -t rsa -f ~/.ssh/id_rsa
+    kp="id_rsa"
+fi
+#
+# use the first password-less one
+#
+key_file=""
+for k in ${kp}
+do
+    # Check that it is password-less
+    grep ENCRYPTED ~/.ssh/${k} > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+	key_file=${k}
+	break
+    fi
+done
+# If no password-less key pair was found
+if [ -z "${key_file}" ]; then
+    echo
+    echo "$USER does not have any password-less ssh key pairs."
+    echo
+    echo "Generating one now..."
+    echo
+    rm -f ~/.ssh/id_scidb ~/.ssh/id_scidb.pub
+    ssh-keygen -N "" -t rsa -f ~/.ssh/id_scidb
+    key_file="id_scidb"
+fi
+# HARDCODE WHICH KEY (and which port) TO USE
+if [ -f ~/.ssh/config ]; then
+    sed -i '/# SciDB Installation/,/# SciDB Installation/d' ~/.ssh/config
+fi
+echo "# SciDB Installation" >> ~/.ssh/config
+while read h
+do
+    echo "Host ${h}" >> ~/.ssh/config
+    echo "  IdentityFile ~/.ssh/${key_file}" >> ~/.ssh/config
+    echo "  Port ${ssh_port}" >> ~/.ssh/config
+done < ${host_file}
+echo "# SciDB Installation" >> ~/.ssh/config
+#
+# Set permissions on files used in ~/.ssh
+if [ -f ~/.ssh/config ]; then chmod 600 ~/.ssh/config; fi
+chmod 600 ~/.ssh/${key_file}
+chmod 644 ~/.ssh/${key_file}.pub
+#
+# Make an entry in the authorized_keys file
+cat ~/.ssh/${key_file}.pub >> ~/.ssh/authorized_keys
+chmod go-w ~/.ssh/authorized_keys

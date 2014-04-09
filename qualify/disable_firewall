@@ -21,26 +21,27 @@
 #
 set -u
 ################################################################
-# This script will check connectivity between this host
-# and all hosts over the SciDB port 1239.
-################################################################
-# Global values:
-#
-################################################################
 # Processed values:
-MYDIR=`dirname ${0}`
+# OStype = Ubuntu CentOS Red
+OStype=`awk 'NR == 1 {print $1}' /etc/issue`
 ################################################################
-# Arguments
-host_file="${1}"
-if [ ! -f "${host_file}" ]; then
-    echo
-    echo "Host file '${host_file}' not found."
-    exit 1
-fi
-################################################################
-# CHECK SCIDB PORTS TO HOSTS
+# Check for firewall and turn it off.
 #
-while read host
-do
-    ${MYDIR}/check_port ${host} 1239
-done < ${host_file}
+if [ "${OStype}" = "CentOS" -o "${OStype}" = "Red" ]; then
+    service iptables status > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	echo
+	echo "Turning off iptables on $HOSTNAME ..."
+	echo
+	service iptables stop
+	chkconfig iptables off
+    fi
+elif type ufw >/dev/null 2>&1; then
+    ufw status | grep -F inactive > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+	echo
+	echo "Disabling firewall on $HOSTNAME ..."
+	echo
+	ufw disable
+    fi
+fi

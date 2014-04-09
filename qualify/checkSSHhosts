@@ -20,27 +20,65 @@
 # END_COPYRIGHT
 #
 set -u
-################################################################
-# This script will check connectivity between this host
-# and all hosts over the SciDB port 1239.
-################################################################
-# Global values:
 #
 ################################################################
 # Processed values:
 MYDIR=`dirname ${0}`
 ################################################################
-# Arguments
-host_file="${1}"
-if [ ! -f "${host_file}" ]; then
+# ARGUMENT PROCESSING
+function usage {
+    cat <<EOF
+
+
+Usage:
+$0 -h|--help
+$0 <ssh_port> <host_file>
+EOF
+}
+if [ $# -lt 2 ]; then
     echo
-    echo "Host file '${host_file}' not found."
+    echo "Not enough arguments"
+    usage
     exit 1
 fi
 ################################################################
-# CHECK SCIDB PORTS TO HOSTS
+# yes is a hidden arguments
+# --yes means just do whatever it takes don't ask
 #
-while read host
-do
-    ${MYDIR}/check_port ${host} 1239
-done < ${host_file}
+yes=0
+case "${1}" in
+    -h|--help)
+	usage
+	exit 0
+	;;
+    -y|--yes)
+	yes=1
+	shift
+	;;
+    -*)
+	echo
+	echo "Unknown switch: '${1}'"
+	usage
+	exit 1
+	;;
+esac
+if [ $# -lt 2 ]; then
+    echo
+    echo "Not enough arguments"
+    usage
+    exit 1
+fi
+ssh_port="${1}"
+host_file="${2}"
+if [ ! -f "${host_file}" ]; then
+    echo
+    echo "No host file at location '${host_file}'."
+    exit 1
+fi
+################################################################
+# SETUP SSH KEY
+. ${MYDIR}/setup_ssh_key
+################################################################
+# CHECK SSH TO HOSTS AS ROOT
+export SSHPASS=""
+. ${MYDIR}/check_ssh_2hosts

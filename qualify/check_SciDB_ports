@@ -21,53 +21,9 @@
 #
 set -u
 ################################################################
-# Processed values:
-MYDIR=`dirname ${0}`
-################################################################
-# Temporary files and directories
-#   Note that any temp file or directory will be removed on exit
-trap on_exit EXIT
-function on_exit()
-{
-    rm -rf ${WORKING_DIR}
-}
-WORKING_DIR=`mktemp -d "/tmp/${USER}_INSTALL_XXXX"`
-################################################################
-# ARGUMENT PROCESSING
-function usage {
-    cat <<EOF
-
-Usage:
-$0 -h|--help
-$0 <host_file> <base_port> <max_inst>
-EOF
-}
-if [ $# -lt 3 ]; then
-    echo
-    echo "Not enough arguments"
-    usage
-    exit 1
-fi
-case "${1}" in
-    -h|--help)
-	usage
-	exit 0
-	;;
-    -*)
-	echo
-	echo "Unknown switch: '${1}'"
-	usage
-	exit 1
-	;;
-esac
-host_file="${1}"
-if [ ! -f "${host_file}" ]; then
-    echo
-    echo "Host file '${host_file}' not found."
-    exit 1
-fi
-base_port="${2}"
-max_inst="${3}"
+#
+# This file is sourced.
+#
 ################################################################
 echo "......................................................."
 echo "Checking connections via SciDB ports between all nodes."
