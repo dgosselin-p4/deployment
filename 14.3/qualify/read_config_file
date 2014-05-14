@@ -134,7 +134,7 @@ fi
 # Create a hosts list file from the configuration file
 #   The line in the file is server-#=<host>,<workers>
 #
-awk -F= '$1 ~ /^server-/ {print $2}' ${config_file} | awk -F, '{print $1}'|sort -u > ${WORKING_DIR}/host_file
+awk -F= '$1 ~ /^server-/ {print $2}' ${config_file} | awk -F, '{print $1}' > ${WORKING_DIR}/host_file
 host_file="${WORKING_DIR}/host_file"
 #
 # The coordinator is server-0
