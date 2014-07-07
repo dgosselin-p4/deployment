@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2014 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -u
+################################################################
+# Processed values:
+#
+# OStype
+if [ -f /etc/centos-release ]; then
+    OStype="CentOS"
+elif [ -f /etc/redhat-release ]; then
+    grep "Red Hat" /etc/redhat-release > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	OStype="RedHat"
+    else
+	OStype="Unknown"
+    fi
+elif [ -f /etc/os-release ]; then
+    grep "Ubuntu" /etc/os-release > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	OStype="Ubuntu"
+    else
+	OStype="Unknown"
+    fi
+fi
+case "${OStype}" in
+    Ubuntu)
+	;;
+    CentOS)
+	;;
+    RedHat)
+	;;
+    *)
+	echo
+	echo "We do not support this operating system."
+	exit 1
+esac
+################################################################
+# Check for firewall and turn it off.
+#
+if [ "${OStype}" = "CentOS" -o "${OStype}" = "RedHat" ]; then
+    service iptables status > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	echo
+	echo "Turning off iptables on $HOSTNAME ..."
+	echo
+	service iptables stop
+	chkconfig iptables off
+    fi
+elif type ufw >/dev/null 2>&1; then
+    ufw status | grep -F inactive > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+	echo
+	echo "Disabling firewall on $HOSTNAME ..."
+	echo
+	ufw disable
+    fi
+fi
