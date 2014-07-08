@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>SciDB Non-root Installer</title>
+</head>
+<body>
+<image src="paradigm4-logo.png"/>
+
+<center><h2>SciDB Non-root Installer</h2></center>
+<h3>setupSciDB</h3>
+<p>
+setupSciDB is a script, created by the non-root installer
+<b>nrinstall</b>,
+that sets up the user to use the newly installed, self-contained, SciDB tree.
+<p>The script is installed in the user's home directory on all SciDB hosts.
+As part of the non-root installer <b>nrinstall</b>, this script can be run on all hosts automatically.
+<p>
+setupSciDB modifies the user's .bashrc file to set various PATH environmental variables to reference the SciDB tree.
+</p>
+These variables are enumerated below:
+<ul>
+<li>SCIDB_VER</li>
+<ul>
+<li>The version number of SciDB.</li>
+</ul>
+<li>SCIDB_ROOT</li>
+<ul>
+<li>Where the self-contained tree of /etc, /opt, /usr, /var is installed.
+<br>Refer to the <b>nrinstall</b> page for <a href="nrinstall.html#install_root">install_root</a>.
+</li>
+</ul>
+<li>PATH</li>
+<ul>
+<li>The following are added to the user's PATH variable:</li>
+<ul>
+<li>$SCIDB_ROOT/usr/bin</li>
+<li>$SCIDB_ROOT/opt/scidb/$SCIDB_VER/bin</li>
+<li>$SCIDB_ROOT/opt/scidb/$SCIDB_VER/share/scidb</li>
+</ul>
+</ul>
+<li>LD_LIBRARY_PATH</li>
+<ul>
+<li>The following are added to the user's LD_LIBRARY_PATH variable:</li>
+<ul>
+<li>$SCIDB_ROOT/usr/lib64</li>
+<li>$SCIDB_ROOT/usr/lib</li>
+<li>$SCIDB_ROOT/opt/scidb/$SCIDB_VER/lib</li>
+<li>$SCIDB_ROOT/opt/scidb/$SCIDB_VER/3rdparty/boost/lib</li>
+</ul>
+</ul>
+<li>PYTHONPATH</li>
+<ul>
+<li>The following are added to the user's PYTHONPATH variable:</li>
+<ul>
+<li>$SCIDB_ROOT/usr/lib64/python2.6/site-packages</li>
+<li>$SCIDB_ROOT/usr/lib/python2.6/site-packages</li>
+</ul>
+</ul>
+<li>PGDATA</li>
+<ul>
+<li>The PGDATA variable is set to:</li>
+<ul>
+<li>$SCIDB_ROOT/var/lib/pgsql/data</li>
+</ul>
+</ul>
+</ul>
+</body>
+</html>

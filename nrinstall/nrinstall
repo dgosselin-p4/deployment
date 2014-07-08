@@ -1,0 +1,530 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -eu
+################################################################
+# This script will install SciDB and P4.
+# It is a non-root install.
+################################################################
+# Global values:
+#
+P4_AREA="http://downloads.paradigm4.com/private"
+################################################################
+# Processed values:
+#
+# OStype
+if [ -f /etc/centos-release ]; then
+    OStype="CentOS"
+elif [ -f /etc/redhat-release ]; then
+    grep "Red Hat" /etc/redhat-release > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	OStype="RedHat"
+    else
+	OStype="Unknown"
+    fi
+elif [ -f /etc/os-release ]; then
+    grep "Ubuntu" /etc/os-release > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	OStype="Ubuntu"
+    else
+	OStype="Unknown"
+    fi
+fi
+################################################################
+# For now only CentOS and RedHat are supported.
+#
+# and for RedHat use CentOS packages.
+################################################################
+case "${OStype}" in
+    CentOS)
+	;;
+    RedHat)
+	;;
+    *)
+	echo
+	echo "We do not support this operating system."
+	exit 1
+esac
+# MYDIR
+MYDIR=`dirname ${0}`
+pushd ${MYDIR} > /dev/null
+MYDIR=`pwd`
+popd > /dev/null
+################################################################
+# Temporary files and directories
+#   Note that any temp file or directory will be removed on exit
+trap on_exit EXIT
+function on_exit()
+{
+    rm -rf ${WORKING_DIR}
+}
+WORKING_DIR=`mktemp -d "/tmp/${USER}_NRINSTALL_XXXX"`
+################################################################
+# Argument processing
+function usage {
+    cat <<EOF
+
+Usage:
+$0 -h|--help
+$0 -i|--interactive
+$0 [-p|--p4 <username>:<password>] <version> <config_file>
+EOF
+}
+if [ $# -lt 1 ]; then
+    echo
+    echo "Not enough arguments"
+    usage
+    exit 1
+fi
+# Parse switches
+mode="n"
+p4_creds=""
+case "${1}" in
+    -h|--help)
+	usage
+	exit 0
+	;;
+    -i|--interactive)
+	mode="i"
+	shift
+	;;
+    -p|--p4)
+	shift
+	p4_creds="${1}"
+	shift
+	;;
+    -*)
+	echo
+	echo "Unknown switch: '${1}'"
+	usage
+	exit 1
+	;;
+esac
+################################################################
+# Check that present machine has what it takes to run this script
+if ! type ssh >/dev/null 2>&1; then
+    echo
+    echo "You need ssh to be installed on this machine."
+    echo "Try again once fixed."
+    exit 1
+fi
+if ! type wget >/dev/null 2>&1; then
+    echo
+    echo "You need wget to be installed on this machine."
+    echo "Try again once fixed."
+    exit 1
+fi
+if ! type rpm2cpio >/dev/null 2>&1; then
+    echo
+    echo "You need rpm2cpio to be installed on this machine."
+    echo "Try again once fixed."
+    exit 1
+fi
+################################################################
+# Parse arguments (if its non-interactive mode)
+if [ "${mode}" == "n" ]; then
+    if [ $# -ne 2 ]; then
+	echo
+	echo "Not the correct amount of arguments"
+	usage
+	exit 1
+    fi
+    version="${1}"
+    config_file="${2}"
+    if [[ ${version} =~ ^[0-9]{2}\.[0-9]{1,2}$ ]]; then
+	:
+    else
+	echo
+	echo "Not a valid version number."
+	exit 1
+    fi
+    if [ ! -f "${config_file}" ]; then
+	echo
+	echo "No configuration file at location '${config_file}'."
+	exit 1
+    fi
+################################################################
+# Get arguments (if its interactive mode)
+else
+    #
+    # Version
+    while read -e -p "What version of SciDB are you installing? " version
+    do
+	if [[ ${version} =~ ^[0-9]{2}\.[0-9]{1,2}$ ]]; then
+	    break
+	else
+	    echo
+	    echo "Not a valid version number."
+	    echo "Try again."
+	fi
+    done
+    #
+    # P4
+    if [ -z "$p4_creds" ]; then
+	enterprise=""
+	while read -e -p "Are you installing the Enterprise Edition of SciDB? [y|n] " enterprise
+	do
+	    if [[ ${enterprise} =~ ^[yY] ]]; then
+		echo "Please enter your credentials to access the Enterprise Edition of SciDB."
+		echo "Your credentials will be a single string of 'username:password'."
+		p4_creds=""
+		while read -e -p "Please enter your credentials: " p4_creds
+		do
+		    if [ -z "${p4_creds}" ]; then
+			echo "Please enter your credentials to access the Enterprise Edition of SciDB."
+			echo "Your credentials will be a single string of 'username:password'."
+			continue
+		    else
+			break
+		    fi
+		done
+		break
+	    else
+		break
+	    fi
+	done
+    fi
+    # Configuration file
+    echo
+    echo "I need a SciDB configuration file for your cluster."
+    echo
+    while read -e -p "Do you have such a file? [y|n] " config_file
+    do
+	if [[ ${config_file} =~ ^[nN] ]]; then
+	    echo "Please create one and try again."
+	    exit 1
+	elif [[ ${config_file} =~ ^[yY] ]]; then
+	    break
+	fi
+    done
+    while read -e -p "Please enter location of the configuration file: " config_file
+    do
+	if [ "${config_file}" == "" ]; then
+	    continue
+	fi
+	if [ -f "${config_file}" ]; then
+	    break
+	fi
+	echo
+	echo "No configuration file at location ${config_file}."
+    done
+fi
+################################################################
+# Global values
+#   these needed the SciDB version before they could be set
+P4_CHECK_AUTH="${P4_AREA}/centos6.3/${version}/checkAuth"
+#
+SCIDB_REQUIRES_FILE="SciDB-${version}.requires"
+SCIDB_URLS_FILE="SciDB-${version}.urls"
+#
+P4_URLS_FILE="Paradigm4-${version}.urls"
+#
+SHIM_URLS_FILE="Shim-${version}.urls"
+################################################################
+#
+# Check credentials if given
+if [ ! -z "$p4_creds" ]; then
+    pushd ${WORKING_DIR} > /dev/null
+    rm -f wget.log
+    wget "http://${p4_creds}@${P4_CHECK_AUTH#http://}" > wget.log 2>&1 || true
+    if [ ! -f checkAuth ]; then
+	echo
+	echo "Your Enterprise Edition credentials failed."
+	cat wget.log
+	echo "Try again once fixed."
+	exit 1
+    fi
+    popd > /dev/null
+fi
+################################################################
+# Read in the config.ini file to determine...
+. ${MYDIR}/read_config_file
+#
+if [ -z "$install_dir" ];then
+    echo
+    echo "You need to specify an install_root NOT at /opt/scidb/${version}."
+    echo "You are running a non-root install and as such should be installing into a user writable area."
+    echo "Please correct your configuration file and try again once fixed."
+    exit 1
+fi
+################################################################
+# Create install directory on each host
+echo
+echo "Creating install directory '${install_dir}' on each host."
+echo "  If there is a failure you probably do not have write permission."
+echo "  Choose a different location (in the configuration file) and try again."
+echo
+${MYDIR}/do_ssh $host_file "mkdir -p ${install_dir}"
+#
+# Check that the user can write to these.
+${MYDIR}/do_ssh $host_file "touch ${install_dir}/writeTest"
+echo
+echo "Creating the root data directory '${base_path}' for each SciDB instance on each host."
+echo "  If there is a failure you probably do not have write permission."
+echo "  Choose a different location (in the configuration file) and try again."
+echo
+${MYDIR}/do_ssh $host_file "mkdir -p ${base_path}"
+#
+# Check that the user can write to these.
+${MYDIR}/do_ssh $host_file "touch ${base_path}/writeTest"
+echo
+echo "Done"
+################################################################
+# Check that there is enough disk space
+################################################################
+# Check that there is enough shared memory available
+################################################################
+# Check requirements for SciDB on all hosts
+#
+if [ ! -f ${SCIDB_REQUIRES_FILE} ]; then
+    echo
+    echo "The SciDB requires file ${SCIDB_REQUIRES_FILE} is missing."
+    echo "It should be in this directory."
+    exit 1
+fi
+cp -f ${SCIDB_REQUIRES_FILE} ${WORKING_DIR}
+pushd ${WORKING_DIR} > /dev/null
+# Create a script to run on each host checking for requirements
+${MYDIR}/check_requirements ${SCIDB_REQUIRES_FILE} > checkNeeds
+chmod 555 checkNeeds
+# Now run that script on all hosts
+echo
+echo "Checking hosts for SciDB dependencies (things required for SciDB to run)"
+rm -f checkNeeds.log
+while read host
+do
+    echo
+    echo "Checking $host dependencies..."
+    echo "...copying script to $host:/tmp"
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "rm -f /tmp/checkNeeds" || true
+    scp -q checkNeeds $host:/tmp
+    echo "...running script on $host"
+    echo "$host" >> checkNeeds.log
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "/tmp/checkNeeds" 2>&1 | tee -a checkNeeds.log || true
+done < $host_file
+#
+# Was there a missing requirement
+#
+checkNeedsWC=`wc -l checkNeeds.log|awk '{print $1}'`
+host_fileWC=`wc -l $host_file | awk '{print $1}'`
+if [ $checkNeedsWC -ne $host_fileWC ]; then
+    echo
+    echo "There are some missing requirements."
+    echo "Look in the checkNeeds.log file."
+    echo
+    echo "Please fix the errors and try again."
+    cp checkNeeds.log ${MYDIR}
+    exit 1
+fi
+popd > /dev/null
+echo
+echo "OK: Requirements met on all hosts"
+################################################################
+# Download packages
+#
+echo
+echo "Downloading packages..."
+if [ ! -f ${SCIDB_URLS_FILE} ]; then
+    echo
+    echo "The SciDB urls file ${SCIDB_URLS_FILE} is missing."
+    echo "It should be in this directory."
+    exit 1
+fi
+cp -f ${SCIDB_URLS_FILE} ${WORKING_DIR}
+pushd ${WORKING_DIR} > /dev/null
+while read package
+do
+    rm -f wget.log
+    echo "wget ${package}..."
+    wget "${package}" > wget.log 2>&1 || true
+    if [ ! -f ${package##*/} ]; then
+	echo
+	echo "Tried to 'wget ${package}' but failed."
+	cat wget.log
+	echo "Try again once fixed."
+	exit 1
+    fi
+done < ${SCIDB_URLS_FILE}
+popd > /dev/null
+echo
+echo "OK: Packages downloaded"
+################################################################
+# Download shim
+#
+echo
+echo "Downloading shim..."
+if [ ! -f ${SHIM_URLS_FILE} ]; then
+    echo
+    echo "The Shim urls file ${SHIM_URLS_FILE} is missing."
+    echo "It should be in this directory."
+    exit 1
+fi
+cp -f ${SHIM_URLS_FILE} ${WORKING_DIR}
+pushd ${WORKING_DIR} > /dev/null
+while read package
+do
+    rm -f wget.log
+    echo "wget ${package}..."
+    wget "${package}" > wget.log 2>&1 || true
+    if [ ! -f ${package##*/} ]; then
+	echo
+	echo "Tried to 'wget ${package}' but failed."
+	cat wget.log
+	echo "Try again once fixed."
+	exit 1
+    fi
+done < ${SHIM_URLS_FILE}
+popd > /dev/null
+echo
+echo "OK: Shim downloaded"
+################################################################
+# Download P4 packages
+#
+if [ ! -z "$p4_creds" ]; then
+    echo
+    echo "Downloading Paradigm4 packages..."
+    if [ ! -f ${P4_URLS_FILE} ]; then
+	echo
+	echo "The P4 urls file ${P4_URLS_FILE} is missing."
+	echo "It should be in this directory."
+	exit 1
+    fi
+    cp -f ${P4_URLS_FILE} ${WORKING_DIR}
+    pushd ${WORKING_DIR} > /dev/null
+    while read package
+    do
+	rm -f wget.log
+	echo "wget ${package}..."
+	if [ "${package#$P4_AREA}" != "${package}" ];then
+	    # This package is from the password protected Paradigm4 area
+	    # Add the p4_creds to it
+	    package="http://${p4_creds}@${package#http://}"
+	fi
+	wget "${package}" > wget.log 2>&1 || true
+	if [ ! -f ${package##*/} ]; then
+	    echo
+	    echo "Tried to 'wget ${package}' but failed."
+	    cat wget.log
+	    echo "Try again once fixed."
+	    exit 1
+	fi
+    done < ${P4_URLS_FILE}
+    popd > /dev/null
+    echo
+    echo "OK: Paradigm4 packages downloaded"
+fi
+################################################################
+# Unpack
+#
+echo
+echo "Unpacking packages..."
+pushd ${WORKING_DIR} > /dev/null
+for package in *.rpm
+do
+    echo "Unpacking ${package}..."
+    rpm2cpio ${package} | cpio -id
+done
+popd > /dev/null
+echo
+echo "OK: Packages unpacked"
+################################################################
+# Patch
+#
+echo
+echo "Patching files..."
+cp -r patch ${WORKING_DIR}
+rm -f ${WORKING_DIR}/opt/scidb/${version}/etc/config.ini
+cp "${config_file}" ${WORKING_DIR}/opt/scidb/${version}/etc/config.ini
+pushd ${WORKING_DIR} > /dev/null
+for p in ./patch/*
+do
+    echo "...${p#\./patch/}"
+    $p ${version} ${install_dir}
+done
+popd > /dev/null
+echo
+echo "OK: files patched"
+################################################################
+# Cleanup
+#
+pushd ${WORKING_DIR} > /dev/null
+rm -f *.rpm
+rm -f *.log
+popd > /dev/null
+################################################################
+# Install to hosts
+#
+pushd ${WORKING_DIR} > /dev/null
+while read host
+do
+    echo
+    echo "Installing to $host..."
+    scp -q -r * $host:${install_dir} 2>&1 | grep -v Permission | grep -v sbin/iptables | grep -v matchpathcon || true
+done < ${host_file}
+popd > /dev/null
+echo
+echo "OK: Installed on all hosts"
+################################################################
+# Modify .bashrc
+#
+${MYDIR}/create_setupSciDB ${version} ${install_dir} ${WORKING_DIR}/setupSciDB
+chmod 555 ${WORKING_DIR}/setupSciDB
+pushd ${WORKING_DIR} > /dev/null
+while read host
+do
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host rm -f \~/setupSciDB || true
+    scp -q setupSciDB $host:\~
+done < ${host_file}
+popd > /dev/null
+echo
+echo "The .bashrc file needs to be modified on all hosts"
+echo "so that all processes can refer to the install tree ${install_dir}."
+echo "A file 'setupSciDB' has been deposited in the home directory on each host"
+echo "that will modify the ~/.bashrc file appropriately."
+echo
+echo "The environment variables that will be modified are:"
+echo "SCIDB_VER SCIDB_ROOT PATH LD_LIBRARY_PATH PYTHONPATH PGDATA"
+echo
+echo "You can chose to make these modifications by hand on each host"
+echo "or this installation process can do it for you."
+echo
+read -e -p "Run setupSciDB on all hosts?  [y|n] " yes_no
+if [[ ${yes_no} =~ ^[yY] ]]; then
+    pushd ${WORKING_DIR} > /dev/null
+    while read host
+    do
+	echo "setupSciDB on $host..."
+	ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host \~/setupSciDB || true
+    done < ${host_file}
+    popd > /dev/null
+    echo
+    echo "OK: setupSciDB on all hosts"
+fi
+#
+ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes ${coordinator} rm -f \~/setupPostgreSQL || true
+scp -q setupPostgreSQL ${coordinator}:\~
+echo
+echo "A file 'setupPostgreSQL' has been deposited in the home directory of the coordinator ${coordinator}."
+echo "Run this file if you wish to run your own instance of postgresql."
+#
+echo
+echo "In order to pickup the environment variables set in the new .bashrc file,"
+echo "please logout of '${coordinator}' and log back in."

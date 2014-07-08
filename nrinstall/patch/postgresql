@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -eu
+################################################################
+# This script will modify etc/rc.d/init.d/postgresql
+# to work in the user's local install tree.
+#
+sed -i \
+-e '/restorecon/d' \
+-e '/chown/d' \
+-e '/\/proc\/self\/oom_adj/d' \
+-e 's/\$SU -l postgres -c /bash -c /' \
+-e 's/\/etc\/sysconfig\/pgsql/$SCIDB_ROOT\/etc\/sysconfig\/pgsql/g' \
+-e 's/\/usr\//$SCIDB_ROOT\/usr\//g' \
+-e 's/\/var\//$SCIDB_ROOT\/var\//g' \
+etc/rc.d/init.d/postgresql

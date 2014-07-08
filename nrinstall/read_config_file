@@ -1,0 +1,245 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+################################################################
+#
+# This file is sourced.
+#
+# It parses the configuration file and sets variables appropriately.
+# The variable config_file should be set.
+#
+################
+# install_root
+#   Full path to the SciDB installation directory.
+#   This should be where on all the hosts the opt/scidb/<version> tree goes.
+#
+install_root="`awk -F= '$1 ~ /^install_root/ {print $2}' ${config_file}`"
+if [ -z "${install_root}" ];then
+    echo
+    echo "There is no 'install_root' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($install_root)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'install_root' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+install_root="${install_root%/}"
+# install_root - does it make sense
+#   there should be a trailing /opt/scidb/<version> in there
+if [ "${install_root}" == "${install_root%/opt/scidb/${version}}" ]; then
+    echo
+    echo "The key 'install_root' in the configuration file '${config_file}' should have a trailing '/opt/scidb/${version}'."
+    echo "It does not (${install_root}). Please correct and try again."
+    exit 1
+fi
+################
+# install_dir
+#   Derived from the above install_root.
+#   This is where the entire SciDB non-root install tree goes.
+install_dir="${install_root%/opt/scidb/${version}}"
+################
+# metadata
+#   Full path to the SciDB metadata definition file.
+#   Its optional (at least I can't find anywhere its used).
+metadata="`awk -F= '$1 ~ /^metadata/ {print $2}' ${config_file}`"
+if [ ! -z "${metadata}" ];then
+    COUNT=($metadata)
+    if [ ${#COUNT[@]} -ne 1 ]; then
+	echo
+	echo "There are two or more instances of the 'metadata' key in the configuration file '${config_file}'."
+	echo "This is not allowed. Please correct and try again."
+	exit 1
+    fi
+    metadata="${metadata%/}"
+# metadata - does it make sense
+#   It should be ${install_root}/share/scidb/meta.sql
+    if [ "${metadata}" != "${install_root}/share/scidb/meta.sql" ]; then
+	echo
+	echo "The key 'metadata' in the configuration file '${config_file}'"
+	echo "should be '${install_root}/share/scidb/meta.sql'"
+	echo "instead of '${metadata}'. Please correct and try again."
+	exit 1
+    fi
+fi
+################
+# pluginsdir
+#   Full path to the SciDB plugins directory that contains all server plugins.
+pluginsdir="`awk -F= '$1 ~ /^pluginsdir/ {print $2}' ${config_file}`"
+if [ -z "${pluginsdir}" ];then
+    echo
+    echo "There is no 'pluginsdir' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($pluginsdir)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'pluginsdir' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+pluginsdir="${pluginsdir%/}"
+# pluginsdir - does it make sense
+#   It should be at $install_root/lib/scidb/plugins
+if [ "${pluginsdir}" != "${install_root}/lib/scidb/plugins" ]; then
+    echo
+    echo "The key 'pluginsdir' in the configuration file '${config_file}'"
+    echo "should be '${install_root}/lib/scidb/plugins'"
+    echo "instead of '${pluginsdir}'. Please correct and try again."
+    exit 1
+fi
+################
+# logconf
+#   Full path to the log4xx logging configuration file.
+logconf="`awk -F= '$1 ~ /^logconf/ {print $2}' ${config_file}`"
+if [ -z "${logconf}" ];then
+    echo
+    echo "There is no 'logconf' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($logconf)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'logconf' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+logconf="${logconf%/}"
+# logconf - does it make sense
+#   It should be at $install_root/share/scidb/log4cxx.properties
+if [ "${logconf}" != "${install_root}/share/scidb/log4cxx.properties" ]; then
+    echo
+    echo "The key 'logconf' in the configuration file '${config_file}'"
+    echo "should be '${install_root}/share/scidb/log4cxx.properties'"
+    echo "instead of '${logconf}'. Please correct and try again."
+    exit 1
+fi
+################
+# base-path
+#   The root data directory for each SciDB instance.
+base_path="`awk -F= '$1 ~ /^base-path/ {print $2}' ${config_file}`"
+if [ -z "${base_path}" ];then
+    echo
+    echo "There is no 'base-path' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($base_path)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'base-path' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+base_path="${base_path%/}"
+################
+# base-port
+#   Base port number (optional, default=1239).
+base_port="`awk -F= '$1 ~ /^base-port/ {print $2}' ${config_file}`"
+if [ -z "$base_port" ]; then
+    base_port=1239
+fi
+################################################################
+# Create a hosts list file from the configuration file
+#   The line in the file is server-#=<host>,<workers>
+#
+awk -F= '$1 ~ /^server-/ {print $2}' ${config_file} | awk -F, '{print $1}'|sort -u > ${WORKING_DIR}/host_file
+host_file="${WORKING_DIR}/host_file"
+#
+# The coordinator is server-0
+#
+coordinator="`awk -F= '$1 ~ /^server-0/ {print $2}' ${config_file} | awk -F, '{print $1}'`"
+if [ -z "${coordinator}" ];then
+    echo
+    echo "There is no 'server-0' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($coordinator)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'server-0' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+#
+# max_inst = the maximum number of worker instances across all hosts
+#
+max_inst="`awk -F, '$1 ~ /^server-/ {print $2}' ${config_file} | sort -n -u | tail -1`"
+################################################################
+# Required settings
+################
+# db_user
+#   User name to use in the catalog connection string.
+db_user="`awk -F= '$1 ~ /^db_user/ {print $2}' ${config_file}`"
+if [ -z "${db_user}" ];then
+    echo
+    echo "There is no 'db_user' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($db_user)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'db_user' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+################
+# db_passwd
+#   Password to use in the catalog connection string.
+db_passwd="`awk -F= '$1 ~ /^db_passwd/ {print $2}' ${config_file}`"
+if [ -z "${db_passwd}" ];then
+    echo
+    echo "There is no 'db_passwd' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+COUNT=($db_passwd)
+if [ ${#COUNT[@]} -ne 1 ]; then
+    echo
+    echo "There are two or more instances of the 'db_passwd' key in the configuration file '${config_file}'."
+    echo "This is not allowed. Please correct and try again."
+    exit 1
+fi
+################################################################
+# Optional settings
+################
+# pg-port
+#   The listening port of Postgres (optional, default=5432).
+pg_port="`awk -F= '$1 ~ /^pg-port/ {print $2}' ${config_file}`"
+if [ -z "$pg_port" ]; then
+    pg_port=5432
+fi
+################
+# ssh-port
+#   The port that ssh uses for communications with the cluster (optional, default=22).
+ssh_port="`awk -F= '$1 ~ /^ssh-port/ {print $2}' ${config_file}`"
+################
+# key-file-list
+#   Comma separated list of filenames that include keys for ssh authentication.
+#   (optional, default=~/.ssh/id_rsa,~/.ssh/id_dsa)
+key_file_list="`awk -F= '$1 ~ /^key-file-list/ {print $2}' ${config_file}`"

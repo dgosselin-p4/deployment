@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>SciDB Non-root Installer</title>
+</head>
+<body>
+<image src="paradigm4-logo.png"/>
+
+<center><h2>SciDB Non-root Installer</h2></center>
+<p>
+This is Paradigm4's non-root installer.
+It is used to install SciDB Community or Enterprise Edition when you do not have root access to the SciDB hosts.
+It can provide PostgreSQL if needed and it provides the SciDB shim.
+<p>
+Presently the non-root installer (named <b>nrinstall</b>) only supports CentOS 6 and RedHat 6 and SciDB version 13.12 onwards.
+<p>
+The computer where you run <b>nrinstall</b> (called the "installer computer") does not have to be one of the hosts you will be running SciDB on.
+You will run <b>nrinstall</b> as a regular user on the installer computer.
+<p>
+To get started download the following tarfile: <a href="SciDB_nrinstall.tar">SciDB_nrinstall.tar</a>
+onto the installer computer and untar it.
+A directory "SciDB_nrinstall" will be the result.
+<i>cd</i> into that directory and type: "./nrinstall"
+<p>
+The order of events should be something like this:
+<ol>
+<li>tar -xf SciDB_nrinstall.tar</li>
+<li>cd SciDB_nrinstall</li>
+<li>./<a href="nrinstall.html">nrinstall</a> -i</li>
+<li>If you do not have write access to an existing PostgreSQL installation on the coordinator</li>
+<ul><li>run the <a href="setupPostgreSQL.html">setupPostgreSQL</a>
+script that is provided by the non-root installer <b>nrinstall</b> on the SciDB coordinator host.</li></ul>
+<li>logout and log back into the coordinator</li>
+<li>scidb.py init_syscat [db] <i>(notice scidb.py is now in your PATH)</i></li>
+<li>scidb.py initall [db]</li>
+<li>scidb.py startall [db]</li>
+<li>Do your work</li>
+<li>scidb.py stopall [db]</li>
+</ol>
+</body>
+</html>

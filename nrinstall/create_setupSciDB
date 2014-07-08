@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -eu
+################################################################
+#
+# This script will create a script to run on each host
+# modifying .bashrc to refer to the new install tree.
+#
+################################################################
+#
+# Args: ${version} ${install_dir} ${WORKING_DIR}/setupSciDB
+#
+cat > ${3} <<EOF
+#!/bin/bash
+#
+sed -i -e '/SCIDB_ROOT/d' -e '/SCIDB_VER/d' .bashrc
+echo 'export SCIDB_VER="${1}"' >> .bashrc
+echo 'export SCIDB_ROOT="${2}"' >> .bashrc
+echo 'export PATH="\$PATH:\$SCIDB_ROOT/usr/bin:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/bin:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/share/scidb"' >> .bashrc
+echo 'export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SCIDB_ROOT/usr/lib64:\$SCIDB_ROOT/usr/lib:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/lib:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/3rdparty/boost/lib"' >> .bashrc
+echo 'export PYTHONPATH="\$SCIDB_ROOT/usr/lib64/python2.6/site-packages:\$SCIDB_ROOT/usr/lib/python2.6/site-packages"' >> .bashrc
+echo 'export PGDATA="\$SCIDB_ROOT/var/lib/pgsql/data"' >> .bashrc
+EOF

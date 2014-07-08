@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>SciDB Non-root Installer</title>
+</head>
+<body>
+<image src="paradigm4-logo.png"/>
+
+<center><h2>SciDB Non-root Installer</h2></center>
+<h3>setupPostgreSQL</h3>
+<p>
+setupPostgreSQL is a script, created by the non-root installer
+<b>nrinstall</b>,
+<br>that will initialize and run the user's own postgres.
+<br>The script is installed in the user's home directory on the SciDB coordinator host.
+</p>
+<p>If you do not have write access to an existing PostgreSQL installation
+<br>or you do not have a PostgreSQL running on the coordinator host
+<br>then run the setupPostgreSQL script on the SciDB coordinator host to set one up.
+</p>
+<ul>
+<li>If there is already a postgres running on the same pg-port you specified in the configuration file
+<br>you will not be allowed to run your own postgres on the same port.</li>
+<br>
+<li>If you did not specify a pg-port in the configuration file and there is already a postgres running on the default (5432) port
+<br>you will not be allowed to run your own postgres on the default port.</li>
+<br>
+<li>You will need to modify the SciDB configuration file (now located at $SCIDB_ROOT/opt/scidb/$SCIDB_VER/etc/config.ini)
+<br>to use a different pg-port and then try setupPostgreSQL again.
+</li>
+</ul>
+<p>
+The setupPostgreSQL script will ask you for the CIDR of your cluster network.
+<br>This is of the form IPaddress/routing_prefix (W.X.Y.Z/N).
+</p>
+<p>
+The setupPostgreSQL will initialize postgres and start it.
+<br>If you are familiar with postgres commands then please use the ones in the install tree ($SCIDB_ROOT/...).
+</p>
+</body>
+</html>

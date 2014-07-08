@@ -1,0 +1,100 @@
+<html>
+<head>
+<title>SciDB Non-root Installer</title>
+</head>
+<body>
+<image src="paradigm4-logo.png"/>
+
+<center><h2>SciDB Non-root Installer</h2></center>
+<h3>nrinstall</h3>
+<p>
+nrinstall is the SciDB non-root installer script.
+<ul>
+<li>It can be run <a href="#usage">interactively or command line</a> driven.</li>
+<li>There are several <a href="#prerequisites">prerequisites</a> to running the script.</li>
+<li>The script gets most of its information (except the version number) from a <a href="#config_file">SciDB configuration file</a>.</li>
+<li>It will install a self-contained tree of /etc, /opt, /usr, /var <a href="#install_root">wherever you specify</a>.</li>
+<li>The script will <a href="#prequalify">pre-qualify</a> your installation.</li>
+<li>A script, <a href="setupSciDB.html">setupSciDB</a>, will be created that sets up the user to use this self-contained tree.</li>
+<li>Another script, <a href="setupPostgreSQL.html">setupPostgreSQL</a>, will be created to start your own PostgreSQL server.</li>
+</ul>
+<p>
+<h4><a name="usage" href="#usage">Usage</a></h4>
+./nrinstall -h|--help
+<br>
+./nrinstall -i|--interactive
+<br>
+./nrinstall [-p|--p4 &lt;username&gt;:&lt;password&gt;] &lt;version&gt; &lt;config_file&gt;
+<p>
+The following explains the arguments to the <b>nrinstall</b> command.
+<br>In interactive mode these will be asked for along with explanations.
+</p>
+<dl>
+<dt>[-p|--p4 &lt;username&gt;:&lt;password&gt;]</dt>
+<dd>This is an option that when given indicates you are installing the Enterprise edition of SciDB.</dd>
+<dd>The string "&lt;username&gt;:&lt;password&gt" to the -p|--p4 flag are your credentials for accessing the Enterprise Edition.
+<br>For example: "--p4 name:pswd"</dd>
+<dd><i>Please do not use this option if you are installing the Community Edition.</i></dd>
+<dt>&lt;version&gt;</dt>
+<dd>The version of SciDB you wish to install.
+<br>For example: "13.12"</dd>
+<dt>&lt;config_file&gt;</dt>
+<dd>The SciDB configuration file.
+<br>For example: "cluster64.ini"</dd>
+</dl>
+<h4><a name="prerequisites" href="#prerequisites">Prerequisites</a></h4>
+<p>The following prerequisites must be met before you can successfuly run the non-root installer <b>nrinstall</b>:</p>
+<ul>
+<li>The installer computer must have <i>ssh</i> connectivity to all the SciDB hosts (as listed in the configuration file).</li>
+<li>The installer computer must have the following programs installed: <i>ssh</i>, <i>bash</i>, <i>wget</i>, and <i>rpm2cpio</i>.</li>
+<li>This same user account must be on the installer computer and all SciDB hosts, each account@host with the same home directory (that is absolute pathname not same disk).</li>
+<li>The same OS/version must be on the installer computer and all the SciDB hosts.</li>
+</ul>
+<h4><a name="config_file" href="#config_file">Configuration File</a></h4>
+<p>
+The non-root installer <b>nrinstall</b>, gets all the information it needs from the <a name="config_file" href="#config_file">configuration file</a> &lt;config_file&gt;.
+<br>Please see the SciDB User Guide for information on the configuration file.
+<p>
+Below are the keywords from the <a href="#config_file">configuration file</a> that <b>nrinstall</b> looks for:
+</p>
+<dl>
+<dt>server-0</dt>
+<dd>This is the SciDB host that will be the coordinator for the cluster.</dd>
+<dt>server-N</dt>
+<dd>These are the SciDB hosts that make up the cluster.</dd>
+<dt><a name="install_root" href="#install_root">install_root</a></dt>
+<dd>Full path to the SciDB installation directory.</dd>
+<dd>This is an absolute pathname, the same on all hosts, where the "/opt/scidb/&lt;version&gt;" tree goes.</dd>
+<dd><i>It is 3 levels below where you want to install.
+You want to install in "install_root/../../../"</i></dd>
+<br>
+<dd>Since <b>nrinstall</b> installs not just /opt/scidb but all the other operating system trees (/etc, /opt, /usr, /var) "<a href="#install_root">install_root</a>" is used as guidance where to put all those trees.</dd>
+<br>
+<dd>For example: if in the configuration file "<a href="#install_root">install_root</a>=/home/scidb/opt/scidb/13.12"
+then directory trees /etc, /opt, /usr, /var will be installed in "/home/scidb".</dd>
+<dt>base-path</dt>
+<dd>
+The root data directory for each SciDB instance.
+Each SciDB instance uses an enumerated data directory below the base-path.
+</dd>
+<dt>base-port (optional)</dt>
+<dd>Base port number. Connections to the coordinator (and therefore to the system)
+are via this port number, while worker instances communicate via base-port +
+instance number. The default port number for the SciDB coordinator is 1239.</dd>
+<dt>pg-port (optional)</dt>
+<dd>The listening port of Postgres. The port on which Postgres accepts incoming
+ connections. The default port number for a standard Postgres installation is 5432.</dt>
+</dl>
+<h4><a name="prequalify" href="#prequalify">Pre-Qualify</a></h4>
+<p>The non-root installer script <b>nrinstall</b> will first check your cluster for the following:</p>
+<ul>
+<li>The coordinator has <i>ssh</i> connectivity to itself and all other SciDB hosts.</li>
+<li>The user has write access on all SciDB hosts to where they wish to <a href="#install_root">install</a>.</li>
+<li>The user has write access on all SciDB hosts to where they specified a root data directory (base-path in the configuration file).</li>
+<li>Connections between all SciDB hosts (NxN) through SciDB ports (base-port in the configuration file) are open.</li>
+<li>Connection to the coordinator through the postgresql port (pg-port in the configuration file) from all SciDB hosts is open.</li>
+<li>A minimum operating system configuration is on all SciDB hosts.</li>
+</ul></li>
+</ul>
+</body>
+</html>

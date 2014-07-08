@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -eu
+################################################################
+#
+# This script will create a script to run on each host
+# checking that the requirements given in a requires file
+# are met.
+#
+if [ ! -f "${1}" ]; then
+    echo
+    echo "Requirements file '${1}' not found."
+    exit 1
+fi
+################################################################
+echo "#!/bin/bash"
+echo "#"
+while read depends
+do
+    if [[ "$depends" == "fileutils" ]]; then
+	# Old package now included in coreutils (and therefor the OS)
+	:
+    elif [[ "$depends" == "sh-utils" ]]; then
+	# Old package now included in coreutils (and therefor the OS)
+	:
+    elif [[ "$depends" == "mktemp" ]]; then
+	# Old package now included in coreutils (and therefor the OS)
+	:
+    elif [[ "$depends" =~ "/" ]]; then
+	echo "if [ ! -f $depends ]; then"
+	echo "    echo FILE $depends not found"
+	echo "fi"
+    elif [[ "$depends" =~ '.so' ]]; then
+	echo "if [ \$(find /usr/lib /usr/lib64 /lib /lib64 -name $depends 2>/dev/null | wc -l) -eq 0 ]; then"
+	echo "    echo LIBRARY $depends not found" 
+	echo "fi"
+    else
+	echo "if [ \$(rpm -qa | grep $depends | wc -l) -eq 0 ]; then"
+	echo "    echo PACKAGE $depends not found" 
+	echo "fi"
+    fi
+done < "${1}"
