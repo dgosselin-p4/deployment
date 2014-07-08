@@ -33,19 +33,21 @@ function print_usage ()
 {
     cat <<EOF
 
-${0} [-s|-p <credentials>] [-u <username>] <network> <configfile>
+${0} [-s|-p <credentials>] [-u <username>] <network> <config_file>
   -s         - install SciDB
   -p <credentials>
              - install P4
-               <credentials> is a file with one line of the credentials
-                (<username>:<password>) used to access the P4 downloads.
+               <credentials> is a file with one line of the credentials (<username>:<password>) used to access the P4 downloads.
   -s -p <credentials>
              - install both SciDB and P4
   -u <username>
              - non-root user that will run SciDB
              - defaults to user "scidb"
-  network    - is the network mask the cluster is on
-  configfile - SciDB configuration file
+  <network>
+             - is the network mask the cluster is on
+  	       Note: in the format of W.X.Y.Z/D
+  <config_file>
+             - SciDB configuration file
 EOF
 }
 ################################################################

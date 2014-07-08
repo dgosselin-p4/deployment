@@ -1,11 +1,14 @@
 qualify
 =======================
 
-This is a shell script and accompanying support scripts that will qualify your cluster.
+This shell script along with supporting scripts will qualify your cluster.
 It is driven from your SciDB configuration file.
 
+This script must be run as root on the coordinator (a login shell such as "su -l root").
+
 ./qualify [-u <username>] <config_file>
-  <username>    - non-root user that will run SciDB
+  -u <username>
+                - non-root user that will run SciDB
                 - defaults to user "scidb"
   <config_file> - The SciDB configuration file SciDB will be running with
 
@@ -15,9 +18,13 @@ DISCLAIMER
 This tool is provided as is with no support.
 Use at your own risk.
 ================
+Read the SECURITY file to see what security issues this script will cause.
+================
 PREREQUISITES
 
 Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
+
+This script must be run as root on the coordinator node.
 
 The user account <username> (default is "scidb") must be present on all nodes with the same password and home directory.
 You must know the password for "root" and <username> on all nodes.

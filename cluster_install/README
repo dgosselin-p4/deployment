@@ -1,26 +1,30 @@
 cluster_install
 =======================
 
-This shell script along with supporting scripts allows you to install and setup a SciDB cluster from the coordinator node.
+This shell script along with supporting scripts installs and sets up a SciDB cluster from the coordinator node.
+It is driven from your SciDB configuration file.
 
 This script must be run as root on the coordinator (a login shell such as "su -l root").
 
 Before installing, this script will qualify your cluster.
 This includes setting up password-less ssh keys and turning off firewalls.
+See ../qualify directory for more details.
 
-./cluster_install [-s|-p <credentials>] [-u <username>] <network> <configfile>
+./cluster_install [-s|-p <credentials>] [-u <username>] <network> <config_file>
   -s         - install SciDB
   -p <credentials>
              - install P4
                <credentials> is a file with one line of the credentials (<username>:<password>) to access the P4 downloads.
   -s -p <credentials>
-             - install both SciDB and Pr
+             - install both SciDB and P4
   -u <username>
              - non-root user that will run SciDB
              - defaults to user "scidb"
-  network    - is the network mask the cluster is on
+  <network>
+             - is the network mask the cluster is on
   	       Note: in the format of W.X.Y.Z/D
-  configfile - SciDB configuration file
+  <config_file>
+             - SciDB configuration file
 
 ================
 DISCLAIMER
@@ -36,34 +40,11 @@ Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
 
 This script must be run as root on the coordinator node.
 
-The user account "scidb" or the <username> specified with the "-u" option must be present on all nodes with the same password and home directory.
-You must know the password for "root" and "scidb"/<username> on all nodes.
+The user account <username> (default is "scidb") must be present on all nodes with the same password and home directory.
+You must know the password for "root" and <username> on all nodes.
 
 SSH must be installed and running on all nodes.
 Particularly for SELinux, passphraseless ssh keys must be allowed.
-================
-COMMANDLINE OPTIONS
-
-[-s|-p <credentials>]
-This option selects what type of installation you are doing.
-    -s is a SciDB installation without P4.
-    -p is a SciDB installation with P4.
-    The -p must be followed with a filename that has the credentials for accessing the P4 download area.
-    The credentials file has one line consisting of the <username>:<password> for accessing the P4 download area.
-
-[-u <username>]
-This option allows you to specify the user account that will be running SciDB.
-     It must not be root.
-     It defaults to user "scidb".
-
-network
-    the network mask of the cluster in the form of W.X.Y.Z/D
-
-configfile
-    the SciDB configuration file for the cluster.
-    Either write your own or use our new online tool called "configurator" that provides assistance
-    selecting and building the initialization parameters file, config.ini.
-    See https://github.com/paradigm4/configurator.
 ================
 SETUP
 
