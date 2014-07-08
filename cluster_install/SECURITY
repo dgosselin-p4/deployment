@@ -1,0 +1,13 @@
+These are the known security issues that cluster_install (and indirectly qualify) creates.
+
+* Passwordless ssh as user "root" is setup between the coordinator and all the nodes in the cluster.
+
+* Passwordless ssh as user "scidb" is setup between the coordinator host and all the nodes in the cluster.
+
+* ssh is run with StrictHostKeyChecking=no.
+
+* All firewalls on all nodes are disabled permanently.
+
+* User scidb's .bashrc file is modified.
+
+If any of the above is unacceptable do not use cluster_install
