@@ -266,6 +266,11 @@ if [ -z "$install_dir" ];then
     exit 1
 fi
 ################################################################
+# Qualify the cluster
+pushd ../qualify > /dev/null
+./qualify -u $USER ${config_file}
+popd > /dev/null
+################################################################
 # Create install directory on each host
 echo
 echo "Creating install directory '${install_dir}' on each host."
