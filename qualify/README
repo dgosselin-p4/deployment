@@ -1,10 +1,11 @@
-qualify
-=======================
+This is Paradigm4's qualifier.
 
-This shell script along with supporting scripts will qualify your cluster.
+The qualify shell script along with supporting scripts will qualify your cluster.
 It is driven from your SciDB configuration file.
+There is a "configurator" in the Paradigm4 GitHub to create your own SciDB configuration file.
 
-This script must be run as root on the coordinator (a login shell such as "su -l root").
+If this script is run as root on the coordinator (a login shell such as "su -l root")
+it will attempt to fix any issues with your cluster that could prevent SciDB from working.
 
 ./qualify [-u <username>] <config_file>
   -u <username>
@@ -24,7 +25,5 @@ PREREQUISITES
 
 Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
 
-This script must be run as root on the coordinator node.
-
 The user account <username> (default is "scidb") must be present on all nodes with the same password and home directory.
-You must know the password for "root" and <username> on all nodes.
+You must know the password for "root" (if running as root) and for <username> on all nodes.
