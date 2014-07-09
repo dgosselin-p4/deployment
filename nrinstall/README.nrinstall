@@ -11,7 +11,7 @@ nrinstall is the SciDB non-root installer script.
 Usage
 ./nrinstall -h|--help
 ./nrinstall -i|--interactive
-./nrinstall [-p|--p4 <username>:<password>] <version> <config_file>
+./nrinstall [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <version> <config_file>
 
 The following explains the arguments to the nrinstall command.
 In interactive mode these will be asked for along with explanations.
@@ -21,6 +21,8 @@ In interactive mode these will be asked for along with explanations.
     The string "<username>:<password>" to the -p|--p4 flag are your credentials for accessing the Enterprise Edition.
     For example: "--p4 name:pswd"
     Please do not use this option if you are installing the Community Edition.
+[-d|--downloads <directory>]
+    This is an option to specify a directory that holds the downloaded packages that the pkg_downloader filled.
 <version>
     The version of SciDB you wish to install.
     For example: "14.3"
@@ -33,7 +35,7 @@ Prerequisites
 The following prerequisites must be met before you can successfuly run the non-root installer nrinstall:
 
 * The installer computer must have ssh connectivity to all the SciDB hosts (as listed in the configuration file).
-* The installer computer must have the following programs installed: ssh, bash, wget, and rpm2cpio.
+* The installer computer must have the following programs installed: ssh, bash, wget (or use pkg_downloader), and rpm2cpio.
 * This same user account must be on the installer computer and all SciDB hosts, each account@host with the same home directory (that is absolute pathname not same disk).
 * The same OS/version must be on the installer computer and all the SciDB hosts.
 

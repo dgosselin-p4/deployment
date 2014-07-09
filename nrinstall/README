@@ -16,6 +16,11 @@ You change directory to "nrinstall" and run "./nrinstall" for help.
 
 The README.nrinstall file goes into further detail about the "nrinstall" command.
 
+Additionally if you do not have internet access from your cluster
+there is a script "pkg_downloader" that can be run on a machine with internet access
+to download all the packages needed by nrinstall.
+See README.pkg_downloader for further details.
+
 ==================================================
 The order of events should be something like this:
 
