@@ -323,18 +323,20 @@ echo "...confirmed."
 ################################################################
 # CHECK SSH TO HOSTS AS ${username} ON COORDINATOR NODE
 #
-echo
-echo "Confirming ssh "
+if [ `id -u` -eq 0 ]; then
+    echo
+    echo "Confirming ssh "
 # First copy MYDIR to /tmp/qualify_${username} so that user has access.
-rm -rf /tmp/qualify_${username}
-mkdir -p /tmp/qualify_${username}
-(cd ${MYDIR} ; cp -r . /tmp/qualify_${username})
+    rm -rf /tmp/qualify_${username}
+    mkdir -p /tmp/qualify_${username}
+    (cd ${MYDIR} ; cp -r . /tmp/qualify_${username})
 # Then copy host_file there.
-cp ${host_file} /tmp/qualify_${username}
+    cp ${host_file} /tmp/qualify_${username}
 # Give it to the user
-chown -R ${username} /tmp/qualify_${username}
+    chown -R ${username} /tmp/qualify_${username}
 # RUN
-su -l ${username} -c "cd /tmp/qualify_${username} ; ./checkSSHhosts ${ssh_port} host_file"
+    su -l ${username} -c "cd /tmp/qualify_${username} ; ./checkSSHhosts ${ssh_port} host_file"
+fi
 ################################################################
 # DONE
 echo "...Done qualifying cluster."

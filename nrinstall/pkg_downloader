@@ -1,0 +1,247 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -eu
+################################################################
+# This script will download all packages needed by the nrinstaller.
+#
+# It is intended to provide packages in an environment where the coordinator has no access to the internet.
+#
+################################################################
+# Global values:
+#
+P4_AREA="http://downloads.paradigm4.com/private"
+################################################################
+# Processed values:
+#
+# OStype
+if [ -f /etc/centos-release ]; then
+    OStype="CentOS"
+elif [ -f /etc/redhat-release ]; then
+    grep "Red Hat" /etc/redhat-release > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	OStype="RedHat"
+    else
+	OStype="Unknown"
+    fi
+elif [ -f /etc/os-release ]; then
+    grep "Ubuntu" /etc/os-release > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	OStype="Ubuntu"
+    else
+	OStype="Unknown"
+    fi
+fi
+################################################################
+# For now only CentOS and RedHat are supported.
+#
+# and for RedHat use CentOS packages.
+################################################################
+case "${OStype}" in
+    CentOS)
+	;;
+    RedHat)
+	;;
+    *)
+	echo
+	echo "We do not support this operating system."
+	exit 1
+esac
+################################################################
+# Argument processing
+function usage {
+    cat <<EOF
+
+Usage:
+$0 -h|--help
+$0 -i|--interactive
+$0 [-p|--p4 <username>:<password>] [-d <directory>] <version>
+EOF
+}
+if [ $# -lt 1 ]; then
+    echo
+    echo "Not enough arguments"
+    usage
+    exit 1
+fi
+# Parse switches
+p4_creds=""
+downloads="."
+while [ "${1#-}" != "${1}" ]
+do
+    case "${1}" in
+	-h|--help)
+	    usage
+	    exit 0
+	    ;;
+	-p|--p4)
+	    shift
+	    p4_creds="${1}"
+	    shift
+	    ;;
+	-d|--downloads)
+	    shift
+	    downloads="${1}"
+	    shift
+	    ;;
+	-*)
+	    echo
+	    echo "Unknown switch: '${1}'"
+	    usage
+	    exit 1
+	    ;;
+    esac
+done
+if [ ! -d "${downloads}" ]; then
+    echo
+    echo "Download directory '${downloads}' not found."
+    exit 1
+fi
+version="${1}"
+################################################################
+# Global values
+#   these needed the SciDB version before they could be set
+P4_CHECK_AUTH="${P4_AREA}/centos6.3/${version}/checkAuth"
+#
+SCIDB_REQUIRES_FILE="SciDB-${version}.requires"
+SCIDB_URLS_FILE="SciDB-${version}.urls"
+#
+P4_URLS_FILE="Paradigm4-${version}.urls"
+#
+SHIM_URLS_FILE="Shim-${version}.urls"
+################################################################
+# Check that present machine has what it takes to run this script
+if ! type wget >/dev/null 2>&1; then
+    echo
+    echo "You need wget to be installed on this machine."
+    echo "Try again once fixed."
+    exit 1
+fi
+################################################################
+#
+# Check credentials if given
+if [ ! -z "$p4_creds" ]; then
+    pushd ${downloads} > /dev/null
+    rm -f wget.log
+    wget "http://${p4_creds}@${P4_CHECK_AUTH#http://}" > wget.log 2>&1 || true
+    if [ ! -f checkAuth ]; then
+	echo
+	echo "Your Enterprise Edition credentials failed."
+	cat wget.log
+	echo "Try again once fixed."
+	exit 1
+    fi
+    popd > /dev/null
+fi
+################################################################
+# Download packages
+#
+echo
+echo "Downloading packages..."
+if [ ! -f ${SCIDB_URLS_FILE} ]; then
+    echo
+    echo "The SciDB urls file ${SCIDB_URLS_FILE} is missing."
+    echo "It should be in this directory."
+    exit 1
+fi
+cp -f ${SCIDB_URLS_FILE} ${downloads}
+pushd ${downloads} > /dev/null
+while read package
+do
+    rm -f wget.log
+    echo "wget ${package}..."
+    wget "${package}" > wget.log 2>&1 || true
+    if [ ! -f ${package##*/} ]; then
+	echo
+	echo "Tried to 'wget ${package}' but failed."
+	cat wget.log
+	echo "Try again once fixed."
+	exit 1
+    fi
+done < ${SCIDB_URLS_FILE}
+popd > /dev/null
+echo
+echo "OK: Packages downloaded"
+################################################################
+# Download shim
+#
+echo
+echo "Downloading shim..."
+if [ ! -f ${SHIM_URLS_FILE} ]; then
+    echo
+    echo "The Shim urls file ${SHIM_URLS_FILE} is missing."
+    echo "It should be in this directory."
+    exit 1
+fi
+cp -f ${SHIM_URLS_FILE} ${downloads}
+pushd ${downloads} > /dev/null
+while read package
+do
+    rm -f wget.log
+    echo "wget ${package}..."
+    wget "${package}" > wget.log 2>&1 || true
+    if [ ! -f ${package##*/} ]; then
+	echo
+	echo "Tried to 'wget ${package}' but failed."
+	cat wget.log
+	echo "Try again once fixed."
+	exit 1
+    fi
+done < ${SHIM_URLS_FILE}
+popd > /dev/null
+echo
+echo "OK: Shim downloaded"
+################################################################
+# Download P4 packages
+#
+if [ ! -z "$p4_creds" ]; then
+    echo
+    echo "Downloading Paradigm4 packages..."
+    if [ ! -f ${P4_URLS_FILE} ]; then
+	echo
+	echo "The P4 urls file ${P4_URLS_FILE} is missing."
+	echo "It should be in this directory."
+	exit 1
+    fi
+    cp -f ${P4_URLS_FILE} ${downloads}
+    pushd ${downloads} > /dev/null
+    while read package
+    do
+	rm -f wget.log
+	echo "wget ${package}..."
+	if [ "${package#$P4_AREA}" != "${package}" ];then
+	    # This package is from the password protected Paradigm4 area
+	    # Add the p4_creds to it
+	    package="http://${p4_creds}@${package#http://}"
+	fi
+	wget "${package}" > wget.log 2>&1 || true
+	if [ ! -f ${package##*/} ]; then
+	    echo
+	    echo "Tried to 'wget ${package}' but failed."
+	    cat wget.log
+	    echo "Try again once fixed."
+	    exit 1
+	fi
+    done < ${P4_URLS_FILE}
+    popd > /dev/null
+    echo
+    echo "OK: Paradigm4 packages downloaded"
+fi

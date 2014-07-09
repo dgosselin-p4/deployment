@@ -95,29 +95,41 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 # Parse switches
+#
+# Hidden switch of "-d <directory>"
+#   A directory with packages (from *.urls) already downloaded
 mode="n"
 p4_creds=""
-case "${1}" in
-    -h|--help)
-	usage
-	exit 0
-	;;
-    -i|--interactive)
-	mode="i"
-	shift
-	;;
-    -p|--p4)
-	shift
-	p4_creds="${1}"
-	shift
-	;;
-    -*)
-	echo
-	echo "Unknown switch: '${1}'"
-	usage
-	exit 1
-	;;
-esac
+downloads=""
+while [ "${1#-}" != "${1}" ]
+do
+    case "${1}" in
+	-h|--help)
+	    usage
+	    exit 0
+	    ;;
+	-i|--interactive)
+	    mode="i"
+	    shift
+	    ;;
+	-p|--p4)
+	    shift
+	    p4_creds="${1}"
+	    shift
+	    ;;
+	-d|--downloads)
+	    shift
+	    downloads="${1}"
+	    shift
+	    ;;
+	-*)
+	    echo
+	    echo "Unknown switch: '${1}'"
+	    usage
+	    exit 1
+	    ;;
+    esac
+done
 ################################################################
 # Check that present machine has what it takes to run this script
 if ! type ssh >/dev/null 2>&1; then
@@ -126,11 +138,13 @@ if ! type ssh >/dev/null 2>&1; then
     echo "Try again once fixed."
     exit 1
 fi
-if ! type wget >/dev/null 2>&1; then
-    echo
-    echo "You need wget to be installed on this machine."
-    echo "Try again once fixed."
-    exit 1
+if [ -z "${downloads}" ]; then
+    if ! type wget >/dev/null 2>&1; then
+	echo
+	echo "You need wget to be installed on this machine."
+	echo "Try again once fixed."
+	exit 1
+    fi
 fi
 if ! type rpm2cpio >/dev/null 2>&1; then
     echo
@@ -228,6 +242,19 @@ else
     done
 fi
 ################################################################
+# Hidden switch of "-d <directory>"
+#   A directory with packages (from *.urls) already downloaded
+if [ -n "${downloads}" ]; then
+    if [ ! -d "${downloads}" ]; then
+	echo
+	echo "Download directory '${downloads}' not found."
+	exit 1
+    fi
+    pushd "${downloads}" > /dev/null
+    cp * ${WORKING_DIR}
+    popd > /dev/null
+fi
+################################################################
 # Global values
 #   these needed the SciDB version before they could be set
 P4_CHECK_AUTH="${P4_AREA}/centos6.3/${version}/checkAuth"
@@ -241,18 +268,20 @@ SHIM_URLS_FILE="Shim-${version}.urls"
 ################################################################
 #
 # Check credentials if given
-if [ ! -z "$p4_creds" ]; then
-    pushd ${WORKING_DIR} > /dev/null
-    rm -f wget.log
-    wget "http://${p4_creds}@${P4_CHECK_AUTH#http://}" > wget.log 2>&1 || true
-    if [ ! -f checkAuth ]; then
-	echo
-	echo "Your Enterprise Edition credentials failed."
-	cat wget.log
-	echo "Try again once fixed."
-	exit 1
+if [ -z "${downloads}" ]; then
+    if [ ! -z "$p4_creds" ]; then
+	pushd ${WORKING_DIR} > /dev/null
+	rm -f wget.log
+	wget "http://${p4_creds}@${P4_CHECK_AUTH#http://}" > wget.log 2>&1 || true
+	if [ ! -f checkAuth ]; then
+	    echo
+	    echo "Your Enterprise Edition credentials failed."
+	    cat wget.log
+	    echo "Try again once fixed."
+	    exit 1
+	fi
+	popd > /dev/null
     fi
-    popd > /dev/null
 fi
 ################################################################
 # Read in the config.ini file to determine...
@@ -345,84 +374,21 @@ echo "OK: Requirements met on all hosts"
 ################################################################
 # Download packages
 #
-echo
-echo "Downloading packages..."
-if [ ! -f ${SCIDB_URLS_FILE} ]; then
+if [ -z "${downloads}" ]; then
     echo
-    echo "The SciDB urls file ${SCIDB_URLS_FILE} is missing."
-    echo "It should be in this directory."
-    exit 1
-fi
-cp -f ${SCIDB_URLS_FILE} ${WORKING_DIR}
-pushd ${WORKING_DIR} > /dev/null
-while read package
-do
-    rm -f wget.log
-    echo "wget ${package}..."
-    wget "${package}" > wget.log 2>&1 || true
-    if [ ! -f ${package##*/} ]; then
+    echo "Downloading packages..."
+    if [ ! -f ${SCIDB_URLS_FILE} ]; then
 	echo
-	echo "Tried to 'wget ${package}' but failed."
-	cat wget.log
-	echo "Try again once fixed."
-	exit 1
-    fi
-done < ${SCIDB_URLS_FILE}
-popd > /dev/null
-echo
-echo "OK: Packages downloaded"
-################################################################
-# Download shim
-#
-echo
-echo "Downloading shim..."
-if [ ! -f ${SHIM_URLS_FILE} ]; then
-    echo
-    echo "The Shim urls file ${SHIM_URLS_FILE} is missing."
-    echo "It should be in this directory."
-    exit 1
-fi
-cp -f ${SHIM_URLS_FILE} ${WORKING_DIR}
-pushd ${WORKING_DIR} > /dev/null
-while read package
-do
-    rm -f wget.log
-    echo "wget ${package}..."
-    wget "${package}" > wget.log 2>&1 || true
-    if [ ! -f ${package##*/} ]; then
-	echo
-	echo "Tried to 'wget ${package}' but failed."
-	cat wget.log
-	echo "Try again once fixed."
-	exit 1
-    fi
-done < ${SHIM_URLS_FILE}
-popd > /dev/null
-echo
-echo "OK: Shim downloaded"
-################################################################
-# Download P4 packages
-#
-if [ ! -z "$p4_creds" ]; then
-    echo
-    echo "Downloading Paradigm4 packages..."
-    if [ ! -f ${P4_URLS_FILE} ]; then
-	echo
-	echo "The P4 urls file ${P4_URLS_FILE} is missing."
+	echo "The SciDB urls file ${SCIDB_URLS_FILE} is missing."
 	echo "It should be in this directory."
 	exit 1
     fi
-    cp -f ${P4_URLS_FILE} ${WORKING_DIR}
+    cp -f ${SCIDB_URLS_FILE} ${WORKING_DIR}
     pushd ${WORKING_DIR} > /dev/null
     while read package
     do
 	rm -f wget.log
 	echo "wget ${package}..."
-	if [ "${package#$P4_AREA}" != "${package}" ];then
-	    # This package is from the password protected Paradigm4 area
-	    # Add the p4_creds to it
-	    package="http://${p4_creds}@${package#http://}"
-	fi
 	wget "${package}" > wget.log 2>&1 || true
 	if [ ! -f ${package##*/} ]; then
 	    echo
@@ -431,10 +397,79 @@ if [ ! -z "$p4_creds" ]; then
 	    echo "Try again once fixed."
 	    exit 1
 	fi
-    done < ${P4_URLS_FILE}
+    done < ${SCIDB_URLS_FILE}
     popd > /dev/null
     echo
-    echo "OK: Paradigm4 packages downloaded"
+    echo "OK: Packages downloaded"
+fi
+################################################################
+# Download shim
+#
+if [ -z "${downloads}" ]; then
+    echo
+    echo "Downloading shim..."
+    if [ ! -f ${SHIM_URLS_FILE} ]; then
+	echo
+	echo "The Shim urls file ${SHIM_URLS_FILE} is missing."
+	echo "It should be in this directory."
+	exit 1
+    fi
+    cp -f ${SHIM_URLS_FILE} ${WORKING_DIR}
+    pushd ${WORKING_DIR} > /dev/null
+    while read package
+    do
+	rm -f wget.log
+	echo "wget ${package}..."
+	wget "${package}" > wget.log 2>&1 || true
+	if [ ! -f ${package##*/} ]; then
+	    echo
+	    echo "Tried to 'wget ${package}' but failed."
+	    cat wget.log
+	    echo "Try again once fixed."
+	    exit 1
+	fi
+    done < ${SHIM_URLS_FILE}
+    popd > /dev/null
+    echo
+    echo "OK: Shim downloaded"
+fi
+################################################################
+# Download P4 packages
+#
+if [ -z "${downloads}" ]; then
+    if [ ! -z "$p4_creds" ]; then
+	echo
+	echo "Downloading Paradigm4 packages..."
+	if [ ! -f ${P4_URLS_FILE} ]; then
+	    echo
+	    echo "The P4 urls file ${P4_URLS_FILE} is missing."
+	    echo "It should be in this directory."
+	    exit 1
+	fi
+	cp -f ${P4_URLS_FILE} ${WORKING_DIR}
+	pushd ${WORKING_DIR} > /dev/null
+	while read package
+	do
+	    rm -f wget.log
+	    echo "wget ${package}..."
+	    if [ "${package#$P4_AREA}" != "${package}" ];then
+	    # This package is from the password protected Paradigm4 area
+	    # Add the p4_creds to it
+		package="http://${p4_creds}@${package#http://}"
+	    fi
+	    wget "${package}" > wget.log 2>&1 || true
+	    if [ ! -f ${package##*/} ]; then
+		echo
+		echo "Tried to 'wget ${package}' but failed."
+		cat wget.log
+		echo "Try again once fixed."
+		exit 1
+	    fi
+	done < ${P4_URLS_FILE}
+	popd > /dev/null
+	echo
+	echo "OK: Paradigm4 packages downloaded"
+    fi
 fi
 ################################################################
 # Unpack
