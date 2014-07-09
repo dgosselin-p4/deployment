@@ -27,15 +27,14 @@ set -u
 ################################################################
 # CHECK SSH TO HOSTS
 #
-echo "................................................................"
-echo "Checking ssh connectivity to all hosts from $HOSTNAME as '$USER'."
-echo "................................................................"
+echo
+echo "Confirming ssh connectivity to all hosts from $HOSTNAME as '$USER'."
 portProblems=""
 sshProblems=""
 while read -u3 host
 do
-    echo "Checking ssh ${host} hostname"
-    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname
+    echo "  Confirming ssh ${host} hostname"
+    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname > /dev/null
     if [ $? -ne 0 ]; then
 	# Check that ssh port can connect
 	checkPortStatus=`${MYDIR}/check_port ${host} ${ssh_port} 2>&1`
@@ -48,86 +47,98 @@ do
 	    fi
 	else
 	    # The port is OK
-	    # Try ssh-copy-id
-	    if [ -z "$SSHPASS" ]; then
-		echo
-		echo "I need the '$USER' password for all the hosts in your cluster."
-		echo "I am assuming the password is the same for all hosts."
-		echo
-		echo "The password you give me will exist in this running image only and NOT saved anywhere."
-		echo "I need it to ssh-copy-id $USER's ssh key to all nodes."
-		echo
-		CONFIRM="no"
-		while [ "$SSHPASS" != "$CONFIRM" ]
-		do
-		    read -s -e -p "Please enter the password for '$USER': " SSHPASS
+	    if type sshpass >/dev/null 2>&1; then
+		# Try ssh-copy-id
+		if [ -z "$SSHPASS" ]; then
 		    echo
-		    read -s -e -p "Please reenter password for verification: " CONFIRM
-		    if [ "$SSHPASS" != "$CONFIRM" ]; then
+		    echo "I need the '$USER' password for all the hosts in your cluster."
+		    echo "I am assuming the password is the same for all hosts."
+		    echo
+		    echo "The password you give me will exist in this running image only and NOT saved anywhere."
+		    echo "I need it to ssh-copy-id $USER's ssh key to all nodes."
+		    echo
+		    CONFIRM="no"
+		    while [ "$SSHPASS" != "$CONFIRM" ]
+		    do
+			read -s -e -p "Please enter the password for '$USER': " SSHPASS
 			echo
-			echo "Your entries did not match. Try again."
-			echo
-		    fi
-		done
+			read -s -e -p "Please reenter password for verification: " CONFIRM
+			if [ "$SSHPASS" != "$CONFIRM" ]; then
+			    echo
+			    echo "Your entries did not match. Try again."
+			    echo
+			fi
+		    done
+		    echo
+		    unset CONFIRM
+		fi
+		echo "ssh-copy-id -i ~/.ssh/${key_file}.pub ${host}"
+		sshpass -e ssh-copy-id -i ~/.ssh/${key_file}.pub ${host}
 		echo
-		unset CONFIRM
-	    fi
-	    echo "ssh-copy-id -i ~/.ssh/${key_file}.pub ${host}"
-	    sshpass -e ssh-copy-id -i ~/.ssh/${key_file}.pub ${host}
-	    echo
-	    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname
-	    if [ $? -ne 0 ]; then
-		if [ -z "$sshProblems" ]; then
-		    sshProblems="${host}"
-		else
-		    sshProblems="${sshProblems} ${host}"
+		ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname > /dev/null
+		if [ $? -ne 0 ]; then
+		    if [ -z "$sshProblems" ]; then
+			sshProblems="${host}"
+		    else
+			sshProblems="${sshProblems} ${host}"
+		    fi
+		fi
+	    else
+		# Do without sshpass
+		echo "ssh-copy-id -i ~/.ssh/${key_file}.pub ${host}"
+		ssh-copy-id -i ~/.ssh/${key_file}.pub ${host}
+		echo
+		ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname > /dev/null
+		if [ $? -ne 0 ]; then
+		    if [ -z "$sshProblems" ]; then
+			sshProblems="${host}"
+		    else
+			sshProblems="${sshProblems} ${host}"
+		    fi
 		fi
 	    fi
 	fi
     fi
+    echo "  ...confirmed."
 done 3< ${host_file}
 #
 if [ -n "${portProblems}" ]; then
-    echo
-    echo "The ssh port ${ssh_port} does not appear to be available on the following hosts:"
-    echo
-    echo -n "  "
-    echo ${portProblems}
-    echo
-    echo "I found no problems with ssh on this host."
-    echo "The problem exists on the receiving host."
-    echo
-    echo "Possibilities include:"
-    echo "  sshd is not running on those hosts."
-    echo "  ssh is not properly configured on those hosts."
-    echo "  There is a firewall blocking the ssh port."
-    echo "    The firewall could be on those hosts."
-    echo "    The firewall could be on a router between here and those hosts."
-    echo
-    echo "Since I can not get to those hosts..."
+    echo ">>> "
+    echo ">>> The ssh port ${ssh_port} does not appear to be available on the following hosts:"
+    echo ">>> "
+    echo ">>> ${portProblems}"
+    echo ">>> "
+    echo ">>> I found no problems with ssh on this host."
+    echo ">>> The problem exists on the receiving host."
+    echo ">>> "
+    echo ">>> Possibilities include:"
+    echo ">>>   sshd is not running on those hosts."
+    echo ">>>   ssh is not properly configured on those hosts."
+    echo ">>>   There is a firewall blocking the ssh port."
+    echo ">>>     The firewall could be on those hosts."
+    echo ">>>     The firewall could be on a router between here and those hosts."
+    echo ">>> "
+    echo ">>> Since I can not get to those hosts..."
     echo ">>> Please fix and try again."
     exit 1
 fi
 if [ -n "${sshProblems}" ]; then
-    echo
-    echo "There was a problem ssh'ing from this host to the following hosts:"
-    echo
-    echo -n "  "
-    echo ${sshProblems}
-    echo
-    echo "I found no problems with ssh on this host."
-    echo "I found the ssh port ${ssh_port} is available on those hosts."
-    echo "I did a 'ssh-copy-id' to those hosts."
-    echo
-    echo "I suggest you log onto those hosts and fix ssh there."
-    echo
-    echo "If SELinux is enabled and is ssh configured properly?"
-    echo "   You could try 'setenforce 0' to see if that fixes it."
-    echo
-    echo "Since I can not get to those hosts..."
+    echo ">>> "
+    echo ">>> There was a problem ssh'ing from this host to the following hosts:"
+    echo ">>> "
+    echo ">>> ${sshProblems}"
+    echo ">>> "
+    echo ">>> I found no problems with ssh on this host."
+    echo ">>> I found the ssh port ${ssh_port} is available on those hosts."
+    echo ">>> I did a 'ssh-copy-id' to those hosts."
+    echo ">>> "
+    echo ">>> I suggest you log onto those hosts and fix ssh there."
+    echo ">>> "
+    echo ">>> If SELinux is enabled and if ssh is configured properly..."
+    echo ">>>    You could try 'setenforce 0' to see if that fixes it."
+    echo ">>> "
+    echo ">>> Since I can not get to those hosts..."
     echo ">>> Please fix and try again."
     exit 1
 fi
-echo "......................................................................"
-echo "OK: ssh connectivity to all hosts from $HOSTNAME as '$USER' confirmed."
-echo "......................................................................"
+echo "...confirmed."

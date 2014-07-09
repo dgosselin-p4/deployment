@@ -25,30 +25,8 @@ set -u
 # This file is sourced.
 #
 ################################################################
-echo "................................................................"
-echo "Checking ssh functionality on localhost ($HOSTNAME) as '$USER'."
-echo "................................................................"
-#
-# Check for firewall and turn it off.
-#
-if [ "${OStype}" = "CentOS" -o "${OStype}" = "RedHat" ]; then
-    service iptables status > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-	echo
-	echo "Turning off iptables..."
-	echo
-	service iptables stop
-	chkconfig iptables off
-    fi
-elif type ufw >/dev/null 2>&1; then
-    ufw status | grep -F inactive > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-	echo
-	echo "Disabling firewall..."
-	echo
-	ufw disable
-    fi
-fi
+echo
+echo "Confirming ssh functionality on localhost ($HOSTNAME) as '$USER'..."
 #
 # If the user specified a ssh-port to use in the SciDB configuration file then use that.
 #
@@ -56,18 +34,19 @@ fi
 checkPortStatus=`${MYDIR}/check_port localhost ${ssh_port} 2>&1`
 set -- $checkPortStatus
 if [ ${2} != "OK" ]; then
-    echo
-    echo "There is a problem with ssh on this machine."
-    echo "The ssh port ${ssh_port} does not appear to be available."
-    echo
-    echo "The 'ssh' daemon is running."
-    echo "The firewall is off."
-    echo "When trying to connect to the port I get:"
-    echo "  $checkPortStatus"
-    echo
+    echo ">>> "
+    echo ">>> There is a problem with ssh on this machine."
+    echo ">>> The ssh port ${ssh_port} does not appear to be available."
+    echo ">>> "
+    echo ">>> The 'ssh' daemon is running."
+    echo ">>> The firewall is off."
+    echo ">>> When trying to connect to the port I get:"
+    echo ">>>   $checkPortStatus"
+    echo ">>> "
     echo ">>> Please fix and try again."
     exit 1
 fi
+echo "...confirmed."
 ################################################################
 # SETUP SSH KEY
 . ${MYDIR}/setup_ssh_key
@@ -76,50 +55,59 @@ fi
 #
 function print_ssh_problem ()
 {
-    echo
-    echo "There was a problem ssh'ing from this host to this host as $USER"
-    echo
-    echo "The ssh port ${ssh_port} is available."
-    echo "The 'ssh' daemon is running."
-    echo "The firewall is off."
-    echo
+    echo ">>> "
+    echo ">>> There was a problem ssh'ing from this host ($HOSTNAME) to this host (localhost) as $USER"
+    echo ">>> "
+    echo ">>> The ssh port ${ssh_port} is available."
+    echo ">>> The 'ssh' daemon is running."
+    echo ">>> "
 }
 #
 # Try ssh'ing
 #
-echo "Checking ssh localhost hostname"
-ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes localhost hostname
+echo
+echo "Confirming 'ssh localhost hostname' works..."
+ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes localhost hostname > /dev/null
 if [ $? -ne 0 ]; then
+    echo ">>> "
+    echo ">>> ssh to localhost did not work."
     if [ "${SELINUX}" = "Enforcing" ]; then
-	#  Try turning off SELinux
-	setenforce 0
-	echo "Checking ssh localhost hostname"
-	ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes localhost hostname
-	if [ $? -ne 0 ]; then
-	    setenforce 1
-	    print_ssh_problem
-	    echo "I have no idea what the problem is."
-	    echo
+	echo ">>> "
+	echo ">>> SELinux is enforcing."
+	if [ `id -u` -ne 0 ]; then
+	    echo ">>> Not being root I can not try turning off SELinux."
+	    echo ">>> This may or may not be the problem."
+	    echo ">>> "
 	    echo ">>> Please fix and try again."
 	    exit 1
 	else
-	    print_ssh_problem
-	    echo
-	    echo "Setting SELinux to permissive mode fixed the problem."
-	    echo
-	    echo "I have left SELinux in permissive mode (setenforce 0)."
-	    echo "Please consider turning SELinux off at boot by modifying /etc/selinux/config."
-	    echo
-	    sleep 5
+	#  Try turning off SELinux
+	    setenforce 0
+	    echo ">>> Turning off SELinux and trying again."
+	    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes localhost hostname
+	    if [ $? -ne 0 ]; then
+		setenforce 1
+		print_ssh_problem
+		echo ">>> I have no idea what the problem is."
+		echo ">>> "
+		echo ">>> Please fix and try again."
+		exit 1
+	    else
+		print_ssh_problem
+		echo ">>> "
+		echo ">>> Setting SELinux to permissive mode fixed the problem."
+		echo ">>> "
+		echo ">>> I have left SELinux in permissive mode (setenforce 0)."
+		echo ">>> Please consider turning SELinux off at boot by modifying /etc/selinux/config."
+		echo ">>> "
+		sleep 5
+	    fi
 	fi
     fi
     print_ssh_problem
-    echo "I have no idea what the problem is."
-    echo
+    echo ">>> I have no idea what the problem is."
+    echo ">>> "
     echo ">>> Please fix and try again."
     exit 1
 fi
-#
-echo "................................................................................"
-echo "OK: ssh functionality on localhost ($HOSTNAME) as '$USER' confirmed."
-echo "................................................................................"
+echo "...confirmed"

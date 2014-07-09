@@ -62,7 +62,7 @@ case "${OStype}" in
 	;;
     *)
 	echo
-	echo "We do not support this operating system."
+	echo ">>> We do not support this operating system."
 	exit 1
 esac
 # SELINUX
@@ -95,10 +95,11 @@ EOF
 }
 if [ $# -lt 1 ]; then
     echo
-    echo "Not enough arguments"
+    echo ">>> Not enough arguments"
     usage
     exit 1
 fi
+CMDLINE="$*"
 ################################################################
 # yes is a hidden arguments
 # --yes means just do whatever it takes don't ask
@@ -118,8 +119,8 @@ case "${1}" in
 	shift
 	if [ $# -lt 1 ]; then
 	    echo
-	    echo "--user <username>"
-	    echo "username not given."
+	    echo ">>> --user <username>"
+	    echo ">>> username not given."
 	    exit 1
 	fi
 	username="${1}"
@@ -127,7 +128,7 @@ case "${1}" in
 	;;
     -*)
 	echo
-	echo "Unknown switch: '${1}'"
+	echo ">>> Unknown switch: '${1}'"
 	usage
 	exit 1
 	;;
@@ -135,90 +136,140 @@ esac
 config_file="${1}"
 if [ ! -f "${config_file}" ]; then
     echo
-    echo "No configuration file at location '${config_file}'."
+    echo ">>> No configuration file at location '${config_file}'."
     exit 1
 fi
-################################################################
-# MUST BE RUN AS ROOT
-if [ `id -u` -ne 0 ]; then
-    echo
-    echo "This script must be run as root."
-    echo "Please login or su -l as root and try again."
-    exit 1
-fi
+echo
+echo "Qualifying cluster defined in configuration file"
+echo "  '${config_file}'"
+echo "with SciDB to be run by user"
+echo "  '${username}'..."
+echo
 ################################################################
 # Read in the config.ini file
 #   The variable config_file should be set.
+echo "Reading configuration file..."
 . ${MYDIR}/read_config_file
+echo "...done"
 ################################################################
 # MUST BE RUN ON THE COORDINATOR
+echo
+echo "Confirming that we are running on coordinator '${coordinator}'..."
 if [ "$HOSTNAME" != "${coordinator}" ]; then
-    echo
-    echo "This script must be run on the coordinator '${coordinator}'."
-    echo "Please login to the coordinator as root and try again."
+    echo ">>> "
+    echo ">>> This script must be run on the coordinator '${coordinator}'."
+    echo ">>> Please login to the coordinator and try again."
+    echo ">>> "
+    echo ">>> Running as $USERNAME the command: '${CMDLINE}'."
     exit 1
 fi
-################################################################
-# OK TO TURN OFF FIREWALLS?
-echo
-echo "For MPI to work (a part of SciDB) firewalls must be off."
-echo "If this script encounters a firewall (iptables or ufw) it will be turned off."
-echo
-echo "If this is unacceptable then you can not install SciDB."
-echo
-read -e -p "Is this acceptable? [y|n] " yes_no
-if [[ ${yes_no} =~ ^[yY] ]]; then
-    :
-else
-    exit 1
-fi
-################################################################
+echo "...confirmed."
+#################################################################
 # CHECK THAT PRESENT MACHINE HAS SSH
 #
 # ssh
+echo
+echo "Confirming '${coordinator}' has 'ssh'..."
 if ! type ssh >/dev/null 2>&1; then
-    echo
-    echo "Can not find command 'ssh'."
-    echo "You need ssh and sshd to be installed on this machine."
-    echo "Try again once it is installed."
+    echo ">>> "
+    echo ">>> Can not find command 'ssh'."
+    echo ">>> You need ssh and sshd to be installed on this machine."
+    echo ">>> Try again once it is installed."
     exit 1
 fi
+echo "...confirmed."
 # sshd
+echo
+echo "Confirming '${coordinator}' has 'sshd'..."
 if ! type sshd >/dev/null 2>&1; then
-    echo
-    echo "Can not find daemon 'sshd'."
-    echo "You need sshd to be installed on this machine."
-    echo "Try again once it is installed."
+    echo ">>> "
+    echo ">>> Can not find daemon 'sshd'."
+    echo ">>> You need sshd to be installed on this machine."
+    echo ">>> Try again once it is installed."
     exit 1
 fi
-case "${OStype}" in
-    Ubuntu)
-	service ssh status > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
-	    service ssh start
-	fi
-	;;
-    CentOS|RedHat)
-	service sshd status > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
-	    service sshd start
-	fi
-	;;
-esac
+echo "...confirmed."
+# sshd running ?
+echo
+echo "Confirming that 'sshd' is running on '${coordinator}'..."
+ps -ef | grep /usr/sbin/sshd | grep -v grep > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo
+    echo ">>> SSH daemon is not running."
+    if [ `id -u` -ne 0 ]; then
+	echo ">>> It needs to be started on this machine."
+	echo ">>> Try again once it is started."
+	exit 1
+    else
+	echo ">>> Starting sshd..."
+	case "${OStype}" in
+	    Ubuntu)
+		service ssh status > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+		    service ssh start
+		    service ssh status > /dev/null 2>&1
+		    if [ $? -ne 0 ]; then
+			echo ">>> ...FAILED TO START SSHD."
+			echo ">>> Try again once it is started."
+			exit 1
+		    fi
+		fi
+		;;
+	    CentOS|RedHat)
+		service sshd status > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+		    service sshd start
+		    service sshd status > /dev/null 2>&1
+		    if [ $? -ne 0 ]; then
+			echo ">>> ...FAILED TO START SSHD."
+			echo ">>> Try again once it is started."
+			exit 1
+		    fi
+		fi
+		;;
+	esac
+    fi
+fi
+echo "...confirmed."
 # sshpass
+echo
+echo "Confirming '${coordinator}' has 'sshpass'..."
 if ! type sshpass >/dev/null 2>&1; then
-    echo
-    echo "Installing 'sshpass'."
-    echo
-    case "${OStype}" in
-	Ubuntu)
-	    apt-get install -y sshpass
-	    ;;
-	CentOS|RedHat)
-	    rpm -U http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-	    yum install -y sshpass
-	    ;;
-    esac
+    echo ">>> "
+    echo ">>> The program 'sshpass' is not installed on this machine."
+    echo ">>> 'sshpass' is a noninteractive ssh password provider."
+    echo ">>> This allows for you to provide a password once,"
+    echo ">>> for multiple calls of ssh-copy-id used to add ssh keys to the other hosts."
+    echo ">>> The password you provide will exist in this running image only and NOT saved anywhere."
+    echo ">>> "
+    if [ `id -u` -ne 0 ]; then
+	echo ">>> Not being root you can not install it yourself."
+	echo ">>> "
+	echo ">>> You can exit this script, have sshpass installed, and re-run this script."
+	echo ">>> Or we can continue and you will be asked multiple times to provide a password for ssh-copy-id to each host."
+	echo ">>> "
+	read -e -p ">>> Would you like to exit this script to install sshpass? [y|n] " yes_no
+	if [[ ${yes_no} =~ ^[yY] ]]; then
+	    exit 0
+	else
+	    echo "...sshpass not installed."
+	fi
+    else
+	echo ">>> Installing 'sshpass'..."
+	case "${OStype}" in
+	    Ubuntu)
+		apt-get install -y sshpass
+		;;
+	    CentOS|RedHat)
+		rpm -U http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+		yum install -y sshpass
+		;;
+	esac
+	echo ">>> ...'sshpass' installed."
+	echo "...confirmed."
+    fi
+else
+    echo "...confirmed."
 fi
 export SSHPASS=""
 ################################################################
@@ -228,33 +279,19 @@ export SSHPASS=""
 # CHECK SSH TO HOSTS AS ROOT
 . ${MYDIR}/check_ssh_2hosts
 ################################################################
-# DISABLE FIREWALLS
-#
-# Copy disable_firewall script to each host and run it.
-#
-echo "................................................................"
-echo "Disabling firewalls on all hosts."
-echo "................................................................"
-while read -u3 host
-do
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "rm -f /tmp/disable_firewall"
-    scp -q ${MYDIR}/disable_firewall root@$host:/tmp
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "/tmp/disable_firewall"
-done 3< ${host_file}
-################################################################
-# CHECK FOR ANY BLOCKAGE
+# CHECK FOR ANY PORT BLOCKAGE
 #
 # Use SciDB port 1239 as a test
-echo "................................................................"
-echo "Checking connections via SciDB ports between all nodes."
-echo "................................................................"
+echo
+echo "Confirming port connections via SciDB port 1239 between all nodes..."
 rm -f ${WORKING_DIR}/CheckPorts.log
 # Copy checkPorts script to each host and run it.
 while read -u3 host
 do
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "rm -f /tmp/checkPorts /tmp/check_port /tmp/host_file"
-    scp -q ${MYDIR}/checkPorts ${MYDIR}/check_port ${host_file} root@$host:/tmp
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "/tmp/checkPorts /tmp/host_file" >> ${WORKING_DIR}/CheckPorts.log 2>&1
+    TEMPDIR=`ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host 'mktemp -d "/tmp/${USER}_qualify_XXXX"'`
+    scp -q ${MYDIR}/checkPorts ${MYDIR}/check_port ${host_file} $host:${TEMPDIR}
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "${TEMPDIR}/checkPorts ${TEMPDIR}/host_file" >> ${WORKING_DIR}/CheckPorts.log 2>&1
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "rm -rf ${TEMPDIR}"
 done 3< ${host_file}
 #
 # Process the CheckPorts.log file
@@ -268,24 +305,26 @@ sed -i -e '/known hosts/d' ${WORKING_DIR}/CheckPorts.log
 CheckPortsWC=`wc -l ${WORKING_DIR}/CheckPorts.log|awk '{print $1}'`
 if [ $CheckPortsWC -ne 0 ]; then
     cp ${WORKING_DIR}/CheckPorts.log .
-    echo
-    echo "There are problems with port connectivity between hosts"
-    echo "that I do not know how to fix."
-    echo
-    echo "Firewalls have been turned off on all hosts."
-    echo "SSH from here works to all hosts."
-    echo
-    echo "There is a log of all port problems in CheckPorts.log."
-    echo
+    echo ">>> "
+    echo ">>> There are problems with port connectivity between hosts"
+    echo ">>> that I do not know how to fix."
+    echo ">>> "
+    echo ">>> There is a log of all port problems in CheckPorts.log."
+    echo ">>> "
+    echo ">>> 'No route to host' messages probably indicates a firewall."
+    echo ">>>   We recommend turning off all firewalls on all hosts."
+    echo ">>> "
+    echo ">>> 'GETADDRINFO' messages indicate a problem getting the IP of the given host."
+    echo ">>> "
     echo ">>> Please fix and try again."
     exit 1
 fi
-echo "................................................................"
-echo "OK: connections via SciDB ports between all nodes confirmed."
-echo "................................................................"
+echo "...confirmed."
 ################################################################
 # CHECK SSH TO HOSTS AS ${username} ON COORDINATOR NODE
 #
+echo
+echo "Confirming ssh "
 # First copy MYDIR to /tmp/qualify_${username} so that user has access.
 rm -rf /tmp/qualify_${username}
 mkdir -p /tmp/qualify_${username}
@@ -298,8 +337,6 @@ chown -R ${username} /tmp/qualify_${username}
 su -l ${username} -c "cd /tmp/qualify_${username} ; ./checkSSHhosts ${ssh_port} host_file"
 ################################################################
 # DONE
-echo "................................................................"
-echo "Done qualifying all nodes to run SciDB."
-echo "................................................................"
+echo "...Done qualifying cluster."
 exit 0
 ################################################################

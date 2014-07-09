@@ -29,14 +29,14 @@ set -u
 #
 # Look for the .ssh directory
 if [ ! -d ~/.ssh ]; then
-    echo
-    echo "$USER does not have a ssh key pair."
-    echo
-    echo "Installation requires a password-less ssh key"
-    echo "to avoid having to enter a password for each use of the key."
-    echo
-    echo "Generating one now..."
-    echo
+    echo ">>> "
+    echo ">>> $USER does not have a ssh key pair."
+    echo ">>> "
+    echo ">>> Installation requires a password-less ssh key"
+    echo ">>> to avoid having to enter a password for each use of the key."
+    echo ">>> "
+    echo ">>> Generating one now..."
+    echo ">>> "
     ssh-keygen -N "" -t rsa -f ~/.ssh/id_rsa
 fi
 # Set permission of .ssh directory just in case
@@ -55,11 +55,11 @@ do
     fi
 done
 if [ -z "${kp}" ]; then
-    echo
-    echo "$USER does not have any valid ssh key pairs."
-    echo
-    echo "Generating one now..."
-    echo
+    echo ">>> "
+    echo ">>> $USER does not have any valid ssh key pairs."
+    echo ">>> "
+    echo ">>> Generating one now..."
+    echo ">>> "
     rm -f ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
     ssh-keygen -N "" -t rsa -f ~/.ssh/id_rsa
     kp="id_rsa"
@@ -79,16 +79,20 @@ do
 done
 # If no password-less key pair was found
 if [ -z "${key_file}" ]; then
-    echo
-    echo "$USER does not have any password-less ssh key pairs."
-    echo
-    echo "Generating one now..."
-    echo
+    echo ">>> "
+    echo ">>> $USER does not have any password-less ssh key pairs."
+    echo ">>> "
+    echo ">>> Generating one now..."
+    echo ">>> "
     rm -f ~/.ssh/id_scidb ~/.ssh/id_scidb.pub
     ssh-keygen -N "" -t rsa -f ~/.ssh/id_scidb
     key_file="id_scidb"
 fi
 # HARDCODE WHICH KEY (and which port) TO USE
+echo
+echo "$USER using password-less ssh key '${key_file}'."
+echo "Hardcoding this key for use with the hosts specified in the configuration file"
+echo "into your .ssh/config file."
 if [ -f ~/.ssh/config ]; then
     sed -i '/# SciDB Installation/,/# SciDB Installation/d' ~/.ssh/config
 fi
