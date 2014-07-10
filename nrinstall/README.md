@@ -27,9 +27,8 @@ The order of events should be something like this:
 
     cd nrinstall
     ./nrinstall -h
-    If you do not have write access to an existing PostgreSQL installation on the coordinator
-        run the setupPostgreSQL script that is provided by the non-root installer nrinstall on the SciDB coordinator host.
     . ~/.bashrc
+    ~/setupPostgreSQL (but ONLY if you need to run your own postgresql and ONLY the first time)
     scidb.py init_syscat [db] (notice scidb.py is now in your PATH)
     scidb.py initall [db]
     scidb.py startall [db]
