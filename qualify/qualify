@@ -98,7 +98,7 @@ if [ $# -lt 1 ]; then
     usage
     exit 1
 fi
-CMDLINE="$*"
+CMDLINE="$0 $*"
 ################################################################
 # yes is a hidden arguments
 # --yes means just do whatever it takes don't ask
@@ -150,12 +150,26 @@ echo
 echo "Reading configuration file..."
 . ${MYDIR}/read_config_file
 echo "...done"
+################################################################
+# MUST BE RUN ON THE COORDINATOR
+MYIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
+echo
+echo "Confirming that we are running on coordinator '${coordinator}'..."
+if [ "$HOSTNAME" != "${coordinator}" -a "$MYIP" != "${coordinator} ]; then
+    echo ">>> "
+    echo ">>> This script must be run on the coordinator '${coordinator}'."
+    echo ">>> Please login to the coordinator and try again."
+    echo ">>> "
+    echo ">>> Running as $USERNAME the command: '${CMDLINE}'."
+    exit 1
+fi
+echo "...confirmed."
 #################################################################
 # CHECK THAT PRESENT MACHINE HAS SSH
 #
 # ssh
 echo
-echo "Confirming '$HOSTNAME' has 'ssh'..."
+echo "Confirming '${coordinator}' has 'ssh'..."
 if ! type ssh >/dev/null 2>&1; then
     echo ">>> "
     echo ">>> Can not find command 'ssh'."
@@ -166,7 +180,7 @@ fi
 echo "...confirmed."
 # sshd
 echo
-echo "Confirming '$HOSTNAME' has 'sshd'..."
+echo "Confirming '${coordinator}' has 'sshd'..."
 if ! type sshd >/dev/null 2>&1; then
     echo ">>> "
     echo ">>> Can not find daemon 'sshd'."
@@ -177,7 +191,7 @@ fi
 echo "...confirmed."
 # sshd running ?
 echo
-echo "Confirming that 'sshd' is running on '$HOSTNAME'..."
+echo "Confirming that 'sshd' is running on '${coordinator}'..."
 ps -ef | grep /usr/sbin/sshd | grep -v grep > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo
@@ -219,7 +233,7 @@ fi
 echo "...confirmed."
 # sshpass
 echo
-echo "Confirming '$HOSTNAME' has 'sshpass'..."
+echo "Confirming '${coordinator}' has 'sshpass'..."
 if ! type sshpass >/dev/null 2>&1; then
     echo ">>> "
     echo ">>> The program 'sshpass' is not installed on this machine."
