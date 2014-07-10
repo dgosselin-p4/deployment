@@ -36,7 +36,7 @@ sed -i -e '/SCIDB_ROOT/d' -e '/SCIDB_VER/d' .bashrc
 echo 'export SCIDB_VER="${1}"' >> .bashrc
 echo 'export SCIDB_ROOT="${2}"' >> .bashrc
 echo 'export PATH="\$PATH:\$SCIDB_ROOT/usr/bin:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/bin:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/share/scidb"' >> .bashrc
-echo 'export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SCIDB_ROOT/usr/lib64:\$SCIDB_ROOT/usr/lib:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/lib:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/3rdparty/boost/lib"' >> .bashrc
+echo 'export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SCIDB_ROOT/usr/lib64:\$SCIDB_ROOT/usr/lib64/mpich2/lib:\$SCIDB_ROOT/usr/lib:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/lib:\$SCIDB_ROOT/opt/scidb/\$SCIDB_VER/3rdparty/boost/lib"' >> .bashrc
 echo 'export PYTHONPATH="\$SCIDB_ROOT/usr/lib64/python2.6/site-packages:\$SCIDB_ROOT/usr/lib/python2.6/site-packages"' >> .bashrc
 echo 'export PGDATA="\$SCIDB_ROOT/var/lib/pgsql/data"' >> .bashrc
 EOF
