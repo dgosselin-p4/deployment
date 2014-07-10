@@ -1,12 +1,13 @@
 The deployment project features 3 tools for installing SciDB.
 
-* cluster_install
-  * Install SciDB to a cluster specified in a configuration file.
-* nrinstall
-  * A non-root install of SciDB to a cluster specified in a configuration file.
-* qualify
-  * Qualify your cluster insuring it will be able to run SciDB.
-
+<dl>
+<dt>cluster_install</dt>
+<dd>Install SciDB to a cluster specified in a configuration file.</dd>
+<dt>nrinstall</dt>
+<dd>A non-root install of SciDB to a cluster specified in a configuration file.</dd>
+<dt>qualify</dt>
+<dd>Qualify your cluster insuring it will be able to run SciDB.</dd>
+<dl>
 Installation
 
 To download the project for a particular release:
