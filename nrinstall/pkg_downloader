@@ -85,7 +85,7 @@ fi
 # Parse switches
 p4_creds=""
 downloads="."
-while [ "${1#-}" != "${1}" ]
+while [ $# -ne 0 ]
 do
     case "${1}" in
 	-h|--help)
@@ -107,6 +107,9 @@ do
 	    echo "Unknown switch: '${1}'"
 	    usage
 	    exit 1
+	    ;;
+	*)
+	    shift
 	    ;;
     esac
 done
