@@ -19,8 +19,7 @@ DISCLAIMER
 
 This tool is provided as is with no support.
 Use at your own risk.
-================
-Read the SECURITY file to see what security issues this script will cause.
+
 ================
 PREREQUISITES
 
@@ -28,3 +27,16 @@ Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
 
 The user account <username> (default is "scidb") must be present on all nodes with the same password and home directory.
 You must know the password for "root" (if running as root) and for <username> on all nodes.
+
+================
+SECURITY
+
+These are the known security issues that qualify creates.
+
+* Passwordless ssh as user "root" is setup between the installer and all the nodes in the cluster.
+
+* Passwordless ssh as user <username> (default is "scidb") is setup between the coordinator host and all the nodes in the cluster.
+
+* All firewalls on all nodes are disabled permanently.
+
+If any of the above is unacceptable do not use SciDB
