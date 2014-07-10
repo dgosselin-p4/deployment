@@ -137,6 +137,10 @@ if [ -z "${downloads}" ]; then
     if ! type wget >/dev/null 2>&1; then
 	echo
 	echo "You need wget to be installed on this machine."
+	echo
+	echo "Or you need to run \"pkg_downloader\" on a machine with wget and internet connectivity"
+	echo "and then mount the resulting downloaded packages directory on this machine"
+	echo "and use the \"-d <directory>\" option."
 	echo "Try again once fixed."
 	exit 1
     fi
