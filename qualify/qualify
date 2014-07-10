@@ -155,7 +155,7 @@ echo "...done"
 MYIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
 echo
 echo "Confirming that we are running on coordinator '${coordinator}'..."
-if [ "$HOSTNAME" != "${coordinator}" -a "$MYIP" != "${coordinator} ]; then
+if [ "$HOSTNAME" != "${coordinator}" -a "$MYIP" != "${coordinator}" ]; then
     echo ">>> "
     echo ">>> This script must be run on the coordinator '${coordinator}'."
     echo ">>> Please login to the coordinator and try again."
@@ -278,6 +278,22 @@ export SSHPASS=""
 ################################################################
 # CHECK SSH TO HOSTS AS ROOT
 . ${MYDIR}/check_ssh_2hosts
+################################################################
+# DISABLE FIREWALLS
+#
+# Copy disable_firewall script to each host and run it.
+#
+if [ `id -u` -eq 0 ]; then
+    echo "................................................................"
+    echo "Disabling firewalls on all hosts."
+    echo "................................................................"
+    while read -u3 host
+    do
+	ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "rm -f /tmp/disable_firewall"
+	scp -q ${MYDIR}/disable_firewall root@$host:/tmp
+	ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes root@$host "/tmp/disable_firewall"
+    done 3< ${host_file}
+fi
 ################################################################
 # CHECK FOR ANY PORT BLOCKAGE
 #
