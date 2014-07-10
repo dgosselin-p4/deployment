@@ -82,10 +82,22 @@ WORKING_DIR=`mktemp -d "/tmp/${USER}_NRINSTALL_XXXX"`
 # Argument processing
 function usage {
     cat <<EOF
+nrinstall is the SciDB non-root installer script.
 
 Usage:
 $0 -h|--help
 $0 [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <config_file>
+
+[-p|--p4 <username>:<password>]
+    This is an option that when given indicates you are installing the Enterprise edition of SciDB.
+    The string "<username>:<password>" to the -p|--p4 flag are your credentials for accessing the Enterprise Edition.
+    For example: "--p4 name:pswd"
+    Please do not use this option if you are installing the Community Edition.
+[-d|--downloads <directory>]
+    This is an option to specify a directory that holds the downloaded packages that the pkg_downloader filled.
+<config_file>
+    The SciDB configuration file.
+    For example: "cluster64.ini"
 EOF
 }
 if [ $# -lt 1 ]; then

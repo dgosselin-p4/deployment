@@ -9,18 +9,15 @@ The non-root installer is driven from your SciDB configuration file.
 There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
 to create your own SciDB configuration file.
 
-The computer where you run nrinstall (called the "installer computer") does not have to be one of the hosts you will be running SciDB on.
-You will run nrinstall as a regular user on the installer computer.
+You run nrinstall on the coordinator node as a regular user.
 
 To get started you downloaded the deployment project from Paradigm4 on GitHub.
 You change directory to "nrinstall" and run "./nrinstall" for help.
 
-The README.nrinstall file goes into further detail about the "nrinstall" command.
-
 Additionally if you do not have internet access from your cluster
 there is a script "pkg_downloader" that can be run on a machine with internet access
 to download all the packages needed by nrinstall.
-See README.pkg_downloader for further details.
+Seek "pkg_downloader -h" for details.
 
 ==================================================
 The order of events should be something like this:
@@ -34,3 +31,13 @@ The order of events should be something like this:
     scidb.py startall [db]
     Do your work
     scidb.py stopall [db]
+
+==================================================
+Prerequisites
+
+The following prerequisites must be met before you can successfuly run the non-root installer nrinstall:
+
+* The coordinator node must have ssh connectivity to all the SciDB hosts (as listed in the configuration file).
+* The coordinator node must have the following programs installed: ssh, bash, wget (or use pkg_downloader), and rpm2cpio.
+* This same user account must be on all SciDB hosts, each account@host with the same home directory (that is absolute pathname not same disk).
+* The same OS/version must be on all the SciDB hosts.
