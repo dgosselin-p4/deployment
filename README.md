@@ -1,4 +1,4 @@
-The deployment project features 3 tools for installing SciDB.
+### The deployment project features 3 tools for installing SciDB. ###
 
 <dl>
 <dt>cluster_install</dt>
@@ -8,12 +8,14 @@ The deployment project features 3 tools for installing SciDB.
 <dt>qualify</dt>
 <dd>Qualify your cluster insuring it will be able to run SciDB.</dd>
 <dl>
-Installation
+#### Installation ####
 
-To download the project for a particular release:
+To download this project for a particular release:
 
-change 'branch:master' to 'tag:<release>'
-       where <release> is the SciDB release number, such as 14.3
+change 'branch:master' to 'tag:\<release\>'
+
+       where <\release\> is the SciDB release number, such as 14.3
+
 click 'download' or directly download from https://github.com/Paradigm4/deployment/archive/14.3.zip
 
 change to the directory of the tool your are interested in and look at the README file
