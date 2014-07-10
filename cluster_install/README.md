@@ -1,11 +1,11 @@
 This is Paradigm4's cluster installer.
 
-This shell script along with supporting scripts installs and sets up a SciDB cluster from the coordinator node.
+This shell script along with supporting scripts installs and sets up a SciDB cluster from any machine acting as an installer.
 It is driven from your SciDB configuration file.
 There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
 to create your own SciDB configuration file.
 
-The cluster_install script must be run as root on the coordinator (a login shell such as "su -l root").
+The cluster_install script must be run as root (a login shell such as "su -l root").
 
 Before installing, this script will qualify your cluster.
 This includes setting up password-less ssh keys and turning off firewalls.
@@ -39,7 +39,7 @@ PREREQUISITES
 
 Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
 
-This script must be run as root on the coordinator node.
+This script must be run as root.
 
 The user account <username> (default is "scidb") must be present on all nodes with the same password and home directory.
 You must know the password for "root" and <username> on all nodes.
