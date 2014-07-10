@@ -29,6 +29,26 @@ set -eu
 PG_HBA="$SCIDB_ROOT/var/lib/pgsql/data/pg_hba.conf"
 PG_CONF="$SCIDB_ROOT/var/lib/pgsql/data/postgresql.conf"
 ################################################################
+# Argument processing (actually any argument is an error).
+function usage () {
+cat <<EOF
+This script will setup PostgreSQL running as you (an unprivileged account).
+This script takes no arguments.
+
+This script is meant to be run once to setup PostgreSQL.
+It should never be run a second time.
+
+There is a service routine, "postgresql", in this directory that you should use to start and stop postgresql.
+EOF
+}
+if [ $# -ne 0 ]; then
+    usage
+    exit 0
+fi
+################################################################
+# Create symlink for future servicing of postgresql
+ln -s $SCIDB_ROOT/etc/rc.d/init.d/postgresql postgresql
+################################################################
 # First check if there is a postmaster already running
 #
 POST="`ps -e -o cmd|grep -v grep|grep postmaster`" || true
@@ -162,8 +182,7 @@ fi
 $SCIDB_ROOT/etc/rc.d/init.d/postgresql stop
 $SCIDB_ROOT/etc/rc.d/init.d/postgresql start
 ################################################################
-# Create symlink and message for future servicing of postgresql
-ln -s $SCIDB_ROOT/etc/rc.d/init.d/postgresql postgresql
+# Message for future servicing of postgresql
 echo
 echo "You have started PostgreSQL as non-root."
 echo "This means it is not running as a service and will not automatically start when rebooting."
