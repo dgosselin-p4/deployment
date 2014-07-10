@@ -32,8 +32,7 @@ DISCLAIMER
 
 This tool is provided as is with no support.
 Use at your own risk.
-================
-Read the SECURITY file to see what security issues this script will cause.
+
 ================
 PREREQUISITES
 
@@ -46,9 +45,27 @@ You must know the password for "root" and <username> on all nodes.
 
 SSH must be installed and running on all nodes.
 Particularly for SELinux, passphraseless ssh keys must be allowed.
+
 ================
 SETUP
 
 This script will modify the .bashrc file on all nodes.
 If you have already logged in on the coordinator, you will need to source the .bashrc file to setup environment variables for this new installation.
 Next time you login you will get these settings as a result of logging in.
+
+================
+SECURITY
+
+These are the known security issues that cluster_install (and indirectly qualify) creates.
+
+* Passwordless ssh as user "root" is setup between the installer and all the nodes in the cluster.
+
+* Passwordless ssh as user <username> (default is "scidb") is setup between the coordinator host and all the nodes in the cluster.
+
+* ssh is run with StrictHostKeyChecking=no.
+
+* All firewalls on all nodes are disabled permanently.
+
+* User <username>'s (default is "scidb") .bashrc file is modified.
+
+If any of the above is unacceptable do not use cluster_install
