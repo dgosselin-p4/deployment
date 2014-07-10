@@ -5,7 +5,7 @@ It is driven from your SciDB configuration file.
 There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
 to create your own SciDB configuration file.
 
-If this script is run as root on the coordinator (a login shell such as "su -l root")
+If this script is run as root on the installer (a login shell such as "su -l root")
 it will attempt to fix any issues with your cluster that could prevent SciDB from working.
 
 ./qualify [-u <username>] <config_file>

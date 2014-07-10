@@ -1,8 +1,8 @@
 These are the known security issues that qualify creates.
 
-* Passwordless ssh as user "root" is setup between the coordinator and all the nodes in the cluster.
+* Passwordless ssh as user "root" is setup between the installer and all the nodes in the cluster.
 
-* Passwordless ssh as user "scidb" is setup between the coordinator host and all the nodes in the cluster.
+* Passwordless ssh as user <username> (default is "scidb") is setup between the coordinator host and all the nodes in the cluster.
 
 * All firewalls on all nodes are disabled permanently.
 
