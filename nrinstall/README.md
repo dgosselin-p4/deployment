@@ -41,3 +41,7 @@ The following prerequisites must be met before you can successfuly run the non-r
 * The coordinator node must have the following programs installed: ssh, bash, wget (or use pkg_downloader), and rpm2cpio.
 * This same user account must be on all SciDB hosts, each account@host with the same home directory (that is absolute pathname not same disk).
 * The same OS/version must be on all the SciDB hosts.
+
+* You should have a SciDB configuration file to "drive" nrinstall. There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator) to create your own SciDB configuration file.
+
+* The setupPostgreSQL script will ask you for the CIDR of your cluster network. This is of the form IPaddress/routing_prefix (W.X.Y.Z/N).
