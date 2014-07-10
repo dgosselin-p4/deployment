@@ -2,7 +2,7 @@ nrinstall is the SciDB non-root installer script.
 
 * It can be run interactively or command line driven.
 * There are several prerequisites to running the script.
-* The script gets most of its information (except the version number) from a SciDB configuration file.
+* The script gets most of its information from a SciDB configuration file.
 * It will install a self-contained tree of /etc, /opt, /usr, /var wherever you specify.
 * The script will pre-qualify your installation.
 * A script, setupSciDB, will be created that sets up the user to use this self-contained tree.
@@ -10,11 +10,9 @@ nrinstall is the SciDB non-root installer script.
 
 Usage
 ./nrinstall -h|--help
-./nrinstall -i|--interactive
-./nrinstall [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <version> <config_file>
+./nrinstall [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <config_file>
 
 The following explains the arguments to the nrinstall command.
-In interactive mode these will be asked for along with explanations.
 
 [-p|--p4 <username>:<password>]
     This is an option that when given indicates you are installing the Enterprise edition of SciDB.
@@ -23,9 +21,6 @@ In interactive mode these will be asked for along with explanations.
     Please do not use this option if you are installing the Community Edition.
 [-d|--downloads <directory>]
     This is an option to specify a directory that holds the downloaded packages that the pkg_downloader filled.
-<version>
-    The version of SciDB you wish to install.
-    For example: "14.3"
 <config_file>
     The SciDB configuration file.
     For example: "cluster64.ini"
@@ -43,7 +38,8 @@ Configuration File
 
 The non-root installer nrinstall, gets all the information it needs from the configuration file <config_file>.
 Please see the SciDB User Guide for information on the configuration file.
-There is a "configurator" in the Paradigm4 GitHub to create your own SciDB configuration file.
+There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
+to create your own SciDB configuration file.
 
 Below are the keywords from the configuration file that nrinstall looks for:
 

@@ -12,7 +12,7 @@ the nrinstall script.
 
 Usage
 ./pkg_downloader -h|--help
-./pkg_downloader [-p|--p4 <username>:<password>] [-d <directory>] <version>
+./pkg_downloader [-p|--p4 <username>:<password>] [-d <directory>]
 
 The following explains the arguments to the  command.
 
@@ -24,9 +24,6 @@ The following explains the arguments to the  command.
 [-d|--downloads <directory>]
     This is an option to specify a directory that will hold the downloaded packages.
     It defaults to the present directory.
-<version>
-    The version of SciDB you wish to install.
-    For example: "14.3"
 
 Prerequisites
 

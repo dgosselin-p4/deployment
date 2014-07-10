@@ -26,6 +26,7 @@ set -eu
 ################################################################
 # Global values:
 #
+version="14.3"
 P4_AREA="http://downloads.paradigm4.com/private"
 ################################################################
 # Processed values:
@@ -84,7 +85,7 @@ function usage {
 
 Usage:
 $0 -h|--help
-$0 [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <version> <config_file>
+$0 [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <config_file>
 EOF
 }
 if [ $# -lt 1 ]; then
@@ -145,22 +146,13 @@ if ! type rpm2cpio >/dev/null 2>&1; then
 fi
 ################################################################
 # Check arguments
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ]; then
     echo
     echo "Not the correct amount of arguments"
     usage
     exit 1
 fi
-version="${1}"
-config_file="${2}"
-#
-if [[ ${version} =~ ^[0-9]{2}\.[0-9]{1,2}$ ]]; then
-    :
-else
-    echo
-    echo "Not a valid version number."
-    exit 1
-fi
+config_file="${1}"
 #
 if [ ! -f "${config_file}" ]; then
     echo
@@ -491,4 +483,4 @@ echo "Run this file if you wish to run your own instance of postgresql."
 #
 echo
 echo "In order to pickup the environment variables set in the new .bashrc file,"
-echo "please logout of '${coordinator}' and log back in."
+echo "please source the ~/.bashrc file ('. ~/.bashrc')"

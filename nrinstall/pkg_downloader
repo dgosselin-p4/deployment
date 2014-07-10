@@ -28,6 +28,7 @@ set -eu
 ################################################################
 # Global values:
 #
+version="14.3"
 P4_AREA="http://downloads.paradigm4.com/private"
 ################################################################
 # Processed values:
@@ -72,8 +73,7 @@ function usage {
 
 Usage:
 $0 -h|--help
-$0 -i|--interactive
-$0 [-p|--p4 <username>:<password>] [-d <directory>] <version>
+$0 [-p|--p4 <username>:<password>] [-d <directory>]
 EOF
 }
 if [ $# -lt 1 ]; then
@@ -115,7 +115,6 @@ if [ ! -d "${downloads}" ]; then
     echo "Download directory '${downloads}' not found."
     exit 1
 fi
-version="${1}"
 ################################################################
 # Global values
 #   these needed the SciDB version before they could be set
