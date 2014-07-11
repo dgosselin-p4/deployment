@@ -1,4 +1,4 @@
-#!/bin/bash
+1;3201;0c#!/bin/bash
 #
 # BEGIN_COPYRIGHT
 #
@@ -160,7 +160,7 @@ if [ "$HOSTNAME" != "${coordinator}" -a "$MYIP" != "${coordinator}" ]; then
     echo ">>> This script must be run on the coordinator '${coordinator}'."
     echo ">>> Please login to the coordinator and try again."
     echo ">>> "
-    echo ">>> Running as $USERNAME the command: '${CMDLINE}'."
+    echo ">>> Running as ${USER} the command: '${CMDLINE}'."
     exit 1
 fi
 echo "...confirmed."
