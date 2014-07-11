@@ -1,6 +1,6 @@
 This is Paradigm4's cluster installer.
 
-This shell script along with supporting scripts installs and sets up a SciDB cluster from any machine acting as an installer.
+This shell script along with supporting scripts installs and sets up a SciDB cluster from the coordinator node.
 It is driven from your SciDB configuration file.
 There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
 to create your own SciDB configuration file.
@@ -58,7 +58,7 @@ SECURITY
 
 These are the known security issues that cluster_install (and indirectly qualify) creates.
 
-* Passwordless ssh as user "root" is setup between the installer and all the nodes in the cluster.
+* Passwordless ssh as user "root" is setup between the coordinator and all the nodes in the cluster.
 
 * Passwordless ssh as user <username> (default is "scidb") is setup between the coordinator host and all the nodes in the cluster.
 

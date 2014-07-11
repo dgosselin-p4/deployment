@@ -5,7 +5,8 @@ It is driven from your SciDB configuration file.
 There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
 to create your own SciDB configuration file.
 
-If this script is run as root on the installer (a login shell such as "su -l root")
+This script must be run from the coordinator.
+If this script is run as root (a login shell such as "su -l root")
 it will attempt to fix any issues with your cluster that could prevent SciDB from working.
 
 ./qualify [-u <username>] <config_file>
@@ -33,7 +34,7 @@ SECURITY
 
 These are the known security issues that qualify creates.
 
-* Passwordless ssh as user "root" is setup between the installer and all the nodes in the cluster.
+* Passwordless ssh as user "root" is setup between the coordinator and all the nodes in the cluster.
 
 * Passwordless ssh as user <username> (default is "scidb") is setup between the coordinator host and all the nodes in the cluster.
 
