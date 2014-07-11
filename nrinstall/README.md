@@ -25,8 +25,8 @@ The following prerequisites must be met before you can successfuly run the non-r
 2. Determine the CIDR of your network, in the form of W.X.Y.Z/N. For instance, if your IP address is 192.168.111.222, and your netmask is 255.255.255.0, your CIDR should be 192.168.111.0/24.
 3. (Optional) If you have licensed the enterprise edition (consult http://paradigm4.com for more information), get your username and password ready.
 4. cd nrinstall
-5. (Optional) If your machine does not have wget installed, or it does not have internet access, use the "pkg_downloader" tool to download packages. See "./pkg_downloader -h" for details.
-6. Install SciDB. See "./nrinstall -h" for details.
+5. (Optional) If your machine does not have wget installed, or it does not have internet access, use the "pkg_downloader" tool to download packages on another machine with wget and internet access, then copy over. See "./pkg_downloader -h" for details.
+6. Install SciDB. See "./nrinstall -h" for details. By default it uses wget to download packages and then install. But it has an option to install from a local directory of already-downloaded packages. Note: to install the enterprise edition, you should provide the "-p USERNAME:PASSWORD" option here again, even though you already provided it to pkg_downloader.
 7. (Optional) If you do not already have access to PostgreSQL on the coordinator machine, use setupPostgreSQL to create PostgreSQL. See "./setupPostgreSQL -h" for more details. The tool will prompt you to enter the CIDR address.
 8. scidb.py init_syscat cluster   (Replace "cluster" with the cluster name you provided to the configurator, if you changed the default value.)
 9. scidb.py initall cluster    (This is to initialize the database.)
