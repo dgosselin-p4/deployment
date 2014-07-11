@@ -27,10 +27,10 @@ The following prerequisites must be met before you can successfuly run the non-r
 4. cd nrinstall
 5. (Optional) If your machine does not have wget installed, or it does not have internet access, use the "pkg_downloader" tool to download packages. See "./pkg_downloader -h" for details.
 6. Install SciDB. See "./nrinstall -h" for details.
-7. (Optional) If you do not already have access to PostgreSQL on the coordinator machine, use setupPostgreSQL to create PostgreSQL. See './setupPostgreSQL -h' for more details. The tool will prompt you to enter the CIDR address.
-8. scidb.py init_syscat cluster   (Replace 'cluster' with the cluster name you provided to the configurator, if you changed the default value.)
+7. (Optional) If you do not already have access to PostgreSQL on the coordinator machine, use setupPostgreSQL to create PostgreSQL. See "./setupPostgreSQL -h" for more details. The tool will prompt you to enter the CIDR address.
+8. scidb.py init_syscat cluster   (Replace "cluster" with the cluster name you provided to the configurator, if you changed the default value.)
 9. scidb.py initall cluster    (This is to initialize the database.)
 10. scidb.py startall cluster   (This is to start the server.)
-11. Do your work, e.g. so list SciDB instances: iquery list('instances')
+11. Do your work, e.g. to list SciDB instances: iquery list('instances')
 12. scidb.py stopall cluster   (This is to stop the server.)
 
