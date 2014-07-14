@@ -134,7 +134,7 @@ if [ "`echo ${network} | sed 's|^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]
 fi
 shift
 # CONFIG FILE
-config_file="${1}"
+config_file="`readlink -m ${1}`"
 if [ ! -f "${config_file}" ];then
     echo
     echo "ERROR: Configuration file '${config_file}' is not readable."

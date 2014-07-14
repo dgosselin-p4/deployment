@@ -132,7 +132,7 @@ case "${1}" in
 	exit 1
 	;;
 esac
-config_file="${1}"
+config_file="`readlink -m ${1}`"
 if [ ! -f "${config_file}" ]; then
     echo
     echo ">>> No configuration file at location '${config_file}'."
