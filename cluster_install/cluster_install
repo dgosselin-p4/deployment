@@ -246,8 +246,11 @@ if [ ${installSciDB} -eq 1 ]; then
 fi
 ################################################################
 # DONE
-echo "******************************"
-echo "Done installing your cluster *"
-echo "******************************"
+echo "*****************************************************************************"
+echo "* Done installing your cluster                                              *"
+echo "*                                                                           *"
+echo "* In order to pickup the environment variables set in the new .bashrc file, *"
+echo "* please source the ~/.bashrc file ('. ~/.bashrc')                          *"
+echo "*****************************************************************************"
 exit 0
 ################################################################
