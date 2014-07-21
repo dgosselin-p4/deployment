@@ -70,15 +70,6 @@ pushd ${MYDIR} > /dev/null
 MYDIR=`pwd`
 popd > /dev/null
 ################################################################
-# Temporary files and directories
-#   Note that any temp file or directory will be removed on exit
-trap on_exit EXIT
-function on_exit()
-{
-    rm -rf ${WORKING_DIR}
-}
-WORKING_DIR=`mktemp -d "/tmp/${USER}_NRINSTALL_XXXX"`
-################################################################
 # Argument processing
 function usage {
     cat <<EOF
@@ -86,7 +77,7 @@ nrinstall is the SciDB non-root installer script.
 
 Usage:
 $0 -h|--help
-$0 [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <config_file>
+$0 [-p|--p4 <username>:<password>] [-d|--downloads <directory>] [-t|--tmpdir <directory>] <config_file>
 
 [-p|--p4 <username>:<password>]
     This is an option that when given indicates you are installing the Enterprise edition of SciDB.
@@ -95,6 +86,8 @@ $0 [-p|--p4 <username>:<password>] [-d|--downloads <directory>] <config_file>
     Please do not use this option if you are installing the Community Edition.
 [-d|--downloads <directory>]
     This is an option to specify a directory that holds the downloaded packages that the pkg_downloader filled.
+[-t|--tmpdir <directory>]
+    This is an option to specify a temporary directory to put downloaded packages into and then unpack them.
 <config_file>
     The SciDB configuration file.
     For example: "cluster64.ini"
@@ -109,6 +102,7 @@ fi
 # Parse switches
 p4_creds=""
 downloads=""
+tmpdir=""
 while [ $# -ne 0 ]
 do
     case "${1}" in
@@ -124,6 +118,11 @@ do
 	-d|--downloads)
 	    shift
 	    downloads="${1}"
+	    shift
+	    ;;
+	-t|--tmpdir)
+	    shift
+	    tmpdir="${1}"
 	    shift
 	    ;;
 	-*)
@@ -171,6 +170,7 @@ if [ $# -ne 1 ]; then
     usage
     exit 1
 fi
+################
 config_file="`readlink -m ${1}`"
 #
 if [ ! -f "${config_file}" ]; then
@@ -178,7 +178,33 @@ if [ ! -f "${config_file}" ]; then
     echo "No configuration file at location '${config_file}'."
     exit 1
 fi
-#
+################
+if [ -n "${tmpdir}" ]; then
+    if [ ! -d "${tmpdir}" ]; then
+	echo
+	echo "Tmpdir directory '${tmpdir}' not found."
+	exit 1
+    fi
+fi
+################################################################
+# Temporary files and directories
+#   Note that any temp file or directory will be removed on exit
+trap on_exit EXIT
+function on_exit()
+{
+    rm -rf ${WORKING_DIR}
+}
+if [ -n "${tmpdir}" ]; then
+    WORKING_DIR=`mktemp -d "${USER}_NRINSTALL_XXXX" --tmpdir="${tmpdir}"`
+else
+    WORKING_DIR=`mktemp -d "${USER}_NRINSTALL_XXXX" --tmpdir`
+fi
+if [ $? != 0 ]; then
+    echo
+    echo "Unable to create directory ${WORKING_DIR}."
+    exit 1
+fi
+################
 if [ -n "${downloads}" ]; then
     if [ ! -d "${downloads}" ]; then
 	echo
