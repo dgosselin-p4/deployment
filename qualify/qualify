@@ -1,4 +1,4 @@
-1;3201;0c#!/bin/bash
+#!/bin/bash
 #
 # BEGIN_COPYRIGHT
 #
@@ -34,6 +34,9 @@ set -u
 #
 # MYDIR
 MYDIR=`dirname ${0}`
+pushd ${MYDIR} > /dev/null
+MYDIR=`pwd`
+popd > /dev/null
 # OStype
 if [ -f /etc/centos-release ]; then
     OStype="CentOS"
@@ -325,7 +328,7 @@ if [ $CheckPortsWC -ne 0 ]; then
     echo ">>> There are problems with port connectivity between hosts"
     echo ">>> that I do not know how to fix."
     echo ">>> "
-    echo ">>> There is a log of all port problems in CheckPorts.log."
+    echo ">>> There is a log of all port problems in ${MYDIR}/CheckPorts.log."
     echo ">>> "
     echo ">>> 'No route to host' messages probably indicates a firewall."
     echo ">>>   We recommend turning off all firewalls on all hosts."

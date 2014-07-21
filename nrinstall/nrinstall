@@ -297,7 +297,7 @@ host_fileWC=`wc -l $host_file | awk '{print $1}'`
 if [ $checkNeedsWC -ne $host_fileWC ]; then
     echo
     echo "There are some missing requirements."
-    echo "Look in the checkNeeds.log file."
+    echo "Look in the ${MYDIR}/checkNeeds.log file."
     echo
     echo "Please fix the errors and try again."
     cp checkNeeds.log ${MYDIR}

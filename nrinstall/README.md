@@ -7,6 +7,8 @@ It is used to install SciDB Community or Enterprise Edition when you do not have
 
 * It only supports CentOS 6 and RedHat 6, but not Ubuntu yet.
 * Installing on multiple machines may not be possible for you, as it may require your IT department to perform some extra steps as root.
+* If a banner or message is displayed on every shell invocation this script will erroneously report errors.
+  Please email us the log and we will diagnose the problem and a provide a work around.
 
 ==================================================
 ##### Prerequisites #####
