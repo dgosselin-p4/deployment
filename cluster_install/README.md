@@ -1,71 +1,28 @@
-This is Paradigm4's cluster installer.
+#### Paradigm4's cluster installer for SciDB 14.3. ####
 
-This shell script along with supporting scripts installs and sets up a SciDB cluster from the coordinator node.
-It is driven from your SciDB configuration file.
-There is a "configurator" in the Paradigm4 GitHub (https://github.com/Paradigm4/configurator)
-to create your own SciDB configuration file.
+It is used to install SciDB Community or Enterprise Edition on a cluster.
 
-The cluster_install script must be run as root (a login shell such as "su -l root").
+==================================================
+##### Prerequisites #####
 
-Before installing, this script will qualify your cluster.
-This includes setting up password-less ssh keys and turning off firewalls.
-See the ../qualify directory for more details.
+The following prerequisites must be met before you can successfuly run the installer cluster_install:
 
-./cluster_install [-s|-p <credentials>] [-u <username>] <network> <config_file>
-  -s         - install SciDB
-  -p <credentials>
-             - install P4
-               <credentials> is a file with one line of the credentials (<username>:<password>) to access the P4 downloads.
-  -s -p <credentials>
-             - install both SciDB and P4
-  -u <username>
-             - non-root user that will run SciDB
-             - defaults to user "scidb"
-  <network>
-             - is the network mask the cluster is on
-  	       Note: in the format of W.X.Y.Z/D
-  <config_file>
-             - SciDB configuration file
+* This installer must be run as root from the coordinator node.
+* The coordinator node must have ssh connectivity to all the SciDB hosts (as listed in the configuration file).
+* This same user account must be on all SciDB hosts, each account@host with the same home directory (that is absolute pathname not same disk).
+* The same OS/version must be on all the SciDB hosts.
 
-================
-DISCLAIMER
+==================================================
+##### Installation #####
 
-This tool is provided as is with no support.
-Use at your own risk.
+1. Generate a SciDB configuration file. You may use https://github.com/Paradigm4/configurator to create the configuration file.
+2. Determine the CIDR of your network, in the form of W.X.Y.Z/N. For instance, if your IP address is 192.168.111.222, and your netmask is 255.255.255.0, your CIDR should be 192.168.111.0/24.
+3. (Optional) If you have licensed the enterprise edition (consult http://paradigm4.com for more information), get your username and password ready.
+4. cd cluster_install
+5. Install SciDB. See "./cluster_install -h" for details.
+6. scidb.py init_syscat cluster   (Replace "cluster" with the cluster name you provided to the configurator, if you changed the default value.)
+7. scidb.py initall cluster    (This is to initialize the database.)
+8. scidb.py startall cluster   (This is to start the server.)
+9. Do your work, e.g. to list SciDB instances: iquery list('instances')
+10. scidb.py stopall cluster   (This is to stop the server.)
 
-================
-PREREQUISITES
-
-Supported OSes are CentOS 6, RedHat 6, and Ubuntu 12.04.
-
-This script must be run as root.
-
-The user account <username> (default is "scidb") must be present on all nodes with the same password and home directory.
-You must know the password for "root" and <username> on all nodes.
-
-SSH must be installed and running on all nodes.
-Particularly for SELinux, passphraseless ssh keys must be allowed.
-
-================
-SETUP
-
-This script will modify the .bashrc file on all nodes.
-If you have already logged in on the coordinator, you will need to source the .bashrc file to setup environment variables for this new installation.
-Next time you login you will get these settings as a result of logging in.
-
-================
-SECURITY
-
-These are the known security issues that cluster_install (and indirectly qualify) creates.
-
-* Passwordless ssh as user "root" is setup between the coordinator and all the nodes in the cluster.
-
-* Passwordless ssh as user <username> (default is "scidb") is setup between the coordinator host and all the nodes in the cluster.
-
-* ssh is run with StrictHostKeyChecking=no.
-
-* All firewalls on all nodes are disabled permanently.
-
-* User <username>'s (default is "scidb") .bashrc file is modified.
-
-If any of the above is unacceptable do not use cluster_install
