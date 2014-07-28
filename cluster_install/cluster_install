@@ -194,7 +194,11 @@ fi
 #
 myconfig=$(readlink -f ${config_file})
 pushd ../qualify > /dev/null 2>&1
-./qualify ${myconfig}
+if [ -n "${username}" ]; then
+    ./qualify -u ${username} ${myconfig}
+else
+    ./qualify ${myconfig}
+fi
 if [ $? -ne 0 ]; then exit 1; fi
 popd > /dev/null 2>&1
 ################
