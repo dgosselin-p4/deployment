@@ -1,4 +1,4 @@
-#### Paradigm4's non-root installer for SciDB 14.3. ####
+#### Paradigm4's non-root installer for SciDB 14.7. ####
 
 It is used to install SciDB Community or Enterprise Edition when you do not have root access to the SciDB hosts.
 
@@ -24,7 +24,7 @@ The following prerequisites must be met before you can successfuly run the non-r
 ==================================================
 ##### Installation #####
 
-1. Generate a SciDB configuration file. You may use https://github.com/Paradigm4/configurator to create the configuration file. When using the tool, make sure the value of 'SciDB install path' is a directory you have write access to, suffixed with '/opt/scidb/14.3'. For instance, if you have access to the directory /home/scidb, you may use /home/scidb/opt/scidb/14.3. 
+1. Generate a SciDB configuration file. You may use https://github.com/Paradigm4/configurator to create the configuration file. When using the tool, make sure the value of 'SciDB install path' is a directory you have write access to, suffixed with '/opt/scidb/14.7'. For instance, if you have access to the directory /home/scidb, you may use /home/scidb/opt/scidb/14.7. 
 2. Determine the CIDR of your network, in the form of W.X.Y.Z/N. For instance, if your IP address is 192.168.111.222, and your netmask is 255.255.255.0, your CIDR should be 192.168.111.0/24.
 3. (Optional) If you have licensed the enterprise edition (consult http://paradigm4.com for more information), get your username and password ready.
 4. cd nrinstall (Note: assume you were in the root directory of the deployment tool.)

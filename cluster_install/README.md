@@ -1,4 +1,4 @@
-#### Paradigm4's cluster installer for SciDB 14.3. ####
+#### Paradigm4's cluster installer for SciDB 14.7. ####
 
 It is used to install SciDB Community or Enterprise Edition on a cluster.
 

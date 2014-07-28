@@ -26,7 +26,7 @@ set -eu
 ################################################################
 # Global values:
 #
-version="14.3"
+version="14.7"
 P4_AREA="http://downloads.paradigm4.com/private"
 ################################################################
 # Processed values:
