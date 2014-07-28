@@ -22,10 +22,9 @@ The following prerequisites must be met before you can successfuly run the insta
 5. cd cluster_install    (Note: assume you were in the root directory of this deployment tool.)
 6. Install SciDB. See "./cluster_install -h" for details.
 7. exit    (Note: assume now you are the 'scidb' user, or whichever username you provided to cluster_install through the '-u' option.)
-8. source ~/.bashrc
+8. source ~/.bashrc (Note: if there was a previous release in your .bashrc file please edit it to reflect the new version number and then source it.)
 9. scidb.py init_syscat cluster  (Note: replace "cluster" with the cluster name you provided to the configurator, if you changed the default value.)
 10. scidb.py initall cluster    (Note: this is to initialize the database.)
 11. scidb.py startall cluster   (Note: this is to start the server.)
 12. Do your work, e.g. to list SciDB instances: iquery list('instances')
 13. scidb.py stopall cluster   (Note: this is to stop the server.)
-

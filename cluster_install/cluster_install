@@ -255,6 +255,9 @@ echo "* Done installing your cluster                                            
 echo "*                                                                           *"
 echo "* In order to pickup the environment variables set in the new .bashrc file, *"
 echo "* please source the ~/.bashrc file ('. ~/.bashrc')                          *"
+echo "*                                                                           *"
+echo "* If there was a previous release in your .bashrc file please edit it       *"
+echo "* to reflect the new version number and then source it.                     *"
 echo "*****************************************************************************"
 exit 0
 ################################################################
