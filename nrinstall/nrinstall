@@ -318,10 +318,6 @@ done < $host_file
 #
 # Was there a missing requirement
 #
-# Error messages from checkNeeds are of the form: "FILE/LIBRARY/PACKAGE * not found"
-#
-grep -E 'not found$' checkNeeds.log > checkNeeds2.log
-mv -f checkNeeds2.log checkNeeds.log
 checkNeedsWC=`wc -l checkNeeds.log|awk '{print $1}'`
 host_fileWC=`wc -l $host_file | awk '{print $1}'`
 if [ $checkNeedsWC -ne $host_fileWC ]; then
