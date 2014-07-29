@@ -313,7 +313,7 @@ do
     scp -q checkNeeds $host:/tmp
     echo "...running script on $host"
     echo "$host" >> checkNeeds.log
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "/tmp/checkNeeds" 2>&1 | tee -a checkNeeds.log || true
+    ssh -n -o StrictHostKeyChecking=no -o LogLevel=quiet -o BatchMode=yes $host "/tmp/checkNeeds" 2>&1 | tee -a checkNeeds.log || true
 done < $host_file
 #
 # Was there a missing requirement
