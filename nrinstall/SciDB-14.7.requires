@@ -25,7 +25,6 @@ libdb-4.7.so
 ld-linux-x86-64.so.2
 libcrypt.so.1
 libgcc_s.so.1
-libcsv.so.3
 libbz2.so.1
 /bin/bash
 /usr/bin/perl
@@ -83,7 +82,6 @@ libkrb5.so.3
 libk5crypto.so.3
 /usr/bin/fipscheck
 libcom_err.so.2
-libcsv
 /usr/sbin/useradd
 libxml2.so.2
 libxml2
