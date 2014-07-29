@@ -1,0 +1,45 @@
+The Paradigm4 .url file is hand made.
+
+An example is versioned in this directory as:
+  Paradigm4-14.7.urls
+
+Paradigm4-<SciDBver>.urls was created as follows:
+
+Look at the p4.spec.in file in the p4 repository.
+The line that starts with "Name:" tells you the name of the p4 package.
+The lines that start with "Requires:" tell you what packages are required.
+The lines that start with "%define" define the variables used in the above lines.
+
+For the SciDB 14.7 release the lines were:
+Name: %{scidb_p4}
+Requires: %{scidb}
+Requires: %{scidb_boost}-date-time  = %{scidb_boost_version}
+Requires: chkconfig
+Requires(post): %{_sbindir}/update-alternatives
+Requires(postun): %{_sbindir}/update-alternatives
+%define scidb               scidb-VERSION_MAJOR.VERSION_MINOR
+%define scidb_p4            scidb-VERSION_MAJOR.VERSION_MINOR-p4
+%define scidb_boost         scidb-VERSION_MAJOR.VERSION_MINOR-libboost
+%define scidb_boost_version 1.54.0-VERSION_PATCH
+
+Ignore the "Requires: chkconfig" line
+since "chkconfig" is in a minimal OS installation.
+Ignore the "Requires(post):" and the "Requires(postun):" lines
+since these are directives to update-alternatives which is in a minimal OS installation.
+
+This produces:
+Name: scidb-VERSION_MAJOR.VERSION_MINOR-p4
+Requires: scidb-VERSION_MAJOR.VERSION_MINOR
+Requires: scidb-VERSION_MAJOR.VERSION_MINOR-libboost-date-time-1.54.0-VERSION_PATCH
+
+For 14.7 this translated into:
+Name: scidb-14.7-p4
+Requires: scidb-14.7
+Requires: scidb-14.7-libboost-date-time-1.54
+
+Ignore the "Requires: scidb-14.7" line
+since this is SciDB which is assumed to be installed if you are going to run P4 extensions.
+
+Look in http://downloads.paradigm4.com/<OS>/<SciDBver>
+and http://downloads.paradigm4.com/private/<OS>/<SciDBver>
+to get the full URL of each and add them to the Paradigm4 url file.

@@ -1,0 +1,38 @@
+The Shim .url file is hand made.
+
+An example is versioned in this directory as:
+  Shim-14.7.urls
+
+Shim-<SciDBver>.urls was created as follows:
+
+Look at the shim webpage https://github.com/Paradigm4/shim
+Look for the package suffix .rpm
+Find the version of SciDB you are interested in.
+Put that URL into the Shim .url file
+
+For the SciDB 14.7 release this is:
+http://paradigm4.github.io/shim/shim-14.7-1.x86_64.rpm
+
+On the webpage look for what this may require
+and then add that URL into the Shim .url file.
+
+For SciDB 14.7 the webpage said "# shim depends on libgomp."
+
+To find the URL for these dependencies go into the chroot
+and do a "yumdownloader --urls --resolve <package>".
+
+For the libgomp package:
+
+$ ./mychroot_run.sh -l ~/myplace
+bash-4.1# yumdownloader --urls --resolve libgomp
+...
+http://mirror.atlanticmetro.net/centos/6.5/os/x86_64//Packages/libgomp-4.4.7-4.el6.i686.rpm
+http://mirror.atlanticmetro.net/centos/6.5/os/x86_64//Packages/libgomp-4.4.7-4.el6.x86_64.rpm
+http://centos.clearvoiceone.com/6.5/updates/x86_64//Packages/nss-softokn-freebl-3.14.3-10.el6_5.i686.rpm
+http://centos.clearvoiceone.com/6.5/updates/x86_64//Packages/glibc-2.12-1.132.el6_5.2.i686.rpm
+
+Pick the appropriate libgomp (same architecture as the shim package, x86_64):
+
+http://mirror.atlanticmetro.net/centos/6.5/os/x86_64//Packages/libgomp-4.4.7-4.el6.x86_64.rpm
+
+add that to the Shim .url file.
