@@ -24,8 +24,7 @@ The following prerequisites must be met before you can successfuly run the insta
 7. exit    (Note: assume now you are the 'scidb' user, or whichever username you provided to cluster_install through the '-u' option.)
 8. (Optional) If there was a previous release in your .bashrc file please edit the SCIDB_VER setting to reflect the new version number.
 9. source ~/.bashrc
-10. scidb.py init_syscat cluster  (Note: replace "cluster" with the cluster name you provided to the configurator, if you changed the default value.)
-11. scidb.py initall cluster    (Note: this is to initialize the database.)
-12. scidb.py startall cluster   (Note: this is to start the server.)
-13. Do your work, e.g. to list SciDB instances: iquery list('instances')
-14. scidb.py stopall cluster   (Note: this is to stop the server.)
+10. scidb.py initall cluster    (Note: this is to initialize the database.)
+11. scidb.py startall cluster   (Note: this is to start the server.)
+12. Do your work, e.g. to list SciDB instances: iquery list('instances')
+13. scidb.py stopall cluster   (Note: this is to stop the server.)
