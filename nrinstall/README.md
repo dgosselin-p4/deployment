@@ -35,6 +35,6 @@ The following prerequisites must be met before you can successfuly run the non-r
 9. scidb.py init_syscat cluster   (Note: replace "cluster" with the cluster name you provided to the configurator, if you changed the default value.)
 10. scidb.py initall cluster    (Note: this is to initialize the database.)
 11. scidb.py startall cluster   (Note: this is to start the server.)
-12. Do your work, e.g. to list SciDB instances: iquery list('instances')
+12. Do your work, e.g. to list SciDB instances: iquery -aq "list('instances')"
 13. scidb.py stopall cluster   (Note: this is to stop the server.)
 
