@@ -249,15 +249,18 @@ if [ ${installSciDB} -eq 1 ]; then
     fi
 fi
 ################################################################
+# HARD modify SCIDB_VER in the users .bashrc file to have new version number
+sed -i 's/SCIDB_VER=[0-9.]*/SCIDB_VER=14.7/' $(eval echo ~${username})/.bashrc
+################################################################
 # DONE
 echo "*****************************************************************************"
-echo "* Done installing your cluster                                              *"
-echo "*                                                                           *"
-echo "* In order to pickup the environment variables set in the new .bashrc file, *"
-echo "* please source the ~/.bashrc file ('. ~/.bashrc')                          *"
-echo "*                                                                           *"
-echo "* If there was a previous release in your .bashrc file please edit the      *"
-echo "* SCIDB_VER setting to reflect the new version number and then source it.   *"
+echo "* Done installing your cluster"
+echo "*"
+echo "* User ${username} must source their .bashrc file ('. ~/.bashrc')"
+echo "* in order to pickup the new set of environment variables."
+echo "*"
+echo "* If you are logged in as this user either logout and log back in"
+echo "* or source the $(eval echo ~${username})/.bashrc file."
 echo "*****************************************************************************"
 exit 0
 ################################################################
