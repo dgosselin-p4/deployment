@@ -74,3 +74,6 @@ http://mirror.atlanticmetro.net/centos/6.5/os/x86_64/Packages/sysvinit-tools-2.8
 http://mirror.atlanticmetro.net/centos/6.5/os/x86_64/Packages/libselinux-utils-2.0.94-5.3.el6_4.1.x86_64.rpm
 http://mirror.atlanticmetro.net/centos/6.5/os/x86_64/Packages/hwdata-0.233-9.1.el6.noarch.rpm
 http://downloads.paradigm4.com/centos6.3/14.7/protobuf-2.4.1-2.x86_64.rpm
+http://centos.corenetworks.net/6.5/updates/x86_64/Packages/openssl-devel-1.0.1e-16.el6_5.14.x86_64.rpm
+http://centos.corenetworks.net/6.5/updates/x86_64/Packages/openssl-1.0.1e-16.el6_5.4.x86_64.rpm
+

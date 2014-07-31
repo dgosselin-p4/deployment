@@ -37,8 +37,6 @@ libpython2.6.so.1.0
 libgmp.so.3
 libldap_r-2.4.so.2
 libgssapi_krb5.so.2
-libcrypto.so.10
-libssl.so.10
 /sbin/install-info
 pam
 setup
