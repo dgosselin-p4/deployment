@@ -467,6 +467,12 @@ echo "OK: files patched"
 # Cleanup
 #
 pushd ${WORKING_DIR} > /dev/null
+# First note if p4 package was present
+if [ -f scidb-${version}-p4-*.rpm ]; then
+    with_p4=1
+else
+    with_p4=0
+fi
 rm -f *.rpm
 rm -f *.log
 popd > /dev/null
@@ -481,6 +487,21 @@ do
     scp -q -r * $host:${install_dir} 2>&1 | grep -v Permission | grep -v sbin/iptables | grep -v matchpathcon || true
 done < ${host_file}
 popd > /dev/null
+################################################################
+# Setup symlinks for community/enterprise plugins
+#
+# The script "paradigm4_plugins" is copied to each host
+# and then run with arguments:
+#   with_p4    - binary 0 or 1 indicating if Enterprise Edition was installed
+#   SCIDB_ROOT - the ${install_dir}
+#   SCIDB_VER  - the ${version}
+#
+while read host
+do
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "rm -f /tmp/paradigm4_plugins" || true
+    scp -q paradigm4_plugins $host:/tmp
+    ssh -n -o StrictHostKeyChecking=no -o LogLevel=quiet -o BatchMode=yes $host "/tmp/paradigm4_plugins ${with_p4} ${install_dir} ${version}"
+done < ${host_file}
 echo
 echo "OK: Installed on all hosts"
 ################################################################

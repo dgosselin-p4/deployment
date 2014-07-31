@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# BEGIN_COPYRIGHT
+#
+# This file is part of SciDB.
+# Copyright (C) 2008-2013 SciDB, Inc.
+#
+# SciDB is free software: you can redistribute it and/or modify
+# it under the terms of the AFFERO GNU General Public License as published by
+# the Free Software Foundation.
+#
+# SciDB is distributed "AS-IS" AND WITHOUT ANY WARRANTY OF ANY KIND,
+# INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
+# NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. See
+# the AFFERO GNU General Public License for the complete license terms.
+#
+# You should have received a copy of the AFFERO GNU General Public License
+# along with SciDB.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
+#
+# END_COPYRIGHT
+#
+set -eu
+################################################################
+# This script will create symlinks for plugins
+# the same way packages do it (using update-alternatives)
+################################################################
+with_p4=${1}
+SCIDB_ROOT=${2}
+SCIDB_VER=${3}
+#
+# Check that the installed tree is there
+if [ ! -d ${SCIDB_ROOT} ]; then
+    echo
+    echo "`hostname` does not appear to have an installation tree at ${SCIDB_ROOT}."
+    echo "Non-root install can not continue."
+    echo "Please contact Paradigm4 for help."
+    exit 1
+fi
+#
+# Create if not there the alternatives directories
+if [ ! -d ${SCIDB_ROOT}/alternatives ]; then
+    mkdir -p ${SCIDB_ROOT}/alternatives
+fi
+if [ ! -d ${SCIDB_ROOT}/alternatives_state ]; then
+    mkdir -p ${SCIDB_ROOT}/alternatives_state
+fi
+#
+# Use Variable to replace typing
+UPALT="/usr/sbin/update-alternatives --altdir ${SCIDB_ROOT}/alternatives --admindir ${SCIDB_ROOT}/alternatives_state"
+################################################################
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# THE FOLLOWING MUST BE KEPT IN SYNC WITH THE scidb.spec and p4.spec files
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+################################################################
+# Actions depend on if Enterprise edition is installed
+if [ $with_p4 -eq 1 ]; then
+    ${UPALT} --install ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/libdense_linear_algebra.so dense_linear_algebra ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/libdense_linear_algebra-p4.so 20
+    ${UPALT} --install ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/liblinear_algebra.so linear_algebra ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/liblinear_algebra-p4.so 20
+else
+    ${UPALT} --install ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/libdense_linear_algebra.so dense_linear_algebra ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/libdense_linear_algebra-scidb.so 10
+    ${UPALT} --install ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/liblinear_algebra.so linear_algebra ${SCIDB_ROOT}/opt/scidb/${SCIDB_VER}/lib/scidb/plugins/liblinear_algebra-scidb.so 10
+fi
