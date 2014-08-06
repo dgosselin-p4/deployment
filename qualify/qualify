@@ -344,9 +344,27 @@ echo "...confirmed."
 ################################################################
 # CHECK THAT USER EXISTS ON ALL HOSTS
 # and with the same home directory.
+USER_HOME=$(eval echo ~${username})
 while read -u3 host
 do
-    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "echo ~${username}"
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "id -u ${username} > /dev/null 2>&1"
+    if [ $? -ne 0 ]; then
+	echo ">>> "
+	echo ">>> User '${username}' does not exist on host '$host'."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
+    HOST_HOME=$(ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "echo ~${username}")
+    if [ "$HOST_HOME" != "$USER_HOME" ]; then
+	echo ">>> "
+	echo ">>> User '${username}'s home on '${host}' is $HOST_HOME."
+	echo ">>> User '${username}'s home on '$HOSTNAME' is $USER_HOME."
+	echo ">>> They must be the same on all hosts."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
 done 3< ${host_file}
 ################################################################
 # CHECK SSH TO HOSTS AS ${username} ON COORDINATOR NODE
