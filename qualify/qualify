@@ -342,6 +342,13 @@ if [ $CheckPortsWC -ne 0 ]; then
 fi
 echo "...confirmed."
 ################################################################
+# CHECK THAT USER EXISTS ON ALL HOSTS
+# and with the same home directory.
+while read -u3 host
+do
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "echo ~${username}"
+done 3< ${host_file}
+################################################################
 # CHECK SSH TO HOSTS AS ${username} ON COORDINATOR NODE
 #
 if [ `id -u` -eq 0 ]; then
