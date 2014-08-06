@@ -78,6 +78,9 @@ fi
 ################################################################
 # SETUP SSH KEY
 . ${MYDIR}/setup_ssh_key
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 ################################################################
 # CHECK SSH TO HOSTS AS USER
 export SSHPASS=""

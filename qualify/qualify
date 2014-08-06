@@ -357,6 +357,9 @@ if [ `id -u` -eq 0 ]; then
     chown -R ${username} /tmp/qualify_${username}
 # RUN
     su -l ${username} -c "cd /tmp/qualify_${username} ; ./checkSSHhosts ${ssh_port} host_file"
+    if [ $? -ne 0 ]; then
+	exit 1
+    fi
 fi
 ################################################################
 # DONE

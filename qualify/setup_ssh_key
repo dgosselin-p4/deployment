@@ -28,7 +28,16 @@ set -u
 # SETUP SSH KEY
 #
 # Look for the .ssh directory
+if [ ! -w ~ ]; then
+    echo ">>> "
+    echo ">>> '$USER' does not have write access in their home directory."
+    echo ">>> Something is seriously wrong."
+    echo ">>> Please fix and try again."
+    echo ">>> "
+    exit 1
+fi
 if [ ! -d ~/.ssh ]; then
+    mkdir ~/.ssh
     echo ">>> "
     echo ">>> $USER does not have a ssh key pair."
     echo ">>> "
@@ -41,6 +50,14 @@ if [ ! -d ~/.ssh ]; then
 fi
 # Set permission of .ssh directory just in case
 chmod 700 ~/.ssh
+if [ $? -ne 0 ]; then
+    echo ">>> "
+    echo ">>> '$USER' can not change permissions on their .ssh directory."
+    echo ">>> Something is seriously wrong."
+    echo ">>> Please fix and try again."
+    echo ">>> "
+    exit 1
+fi
 #
 # Check that a pair exists
 kp=""
@@ -61,6 +78,22 @@ if [ -z "${kp}" ]; then
     echo ">>> Generating one now..."
     echo ">>> "
     rm -f ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+    if [ -f ~/.ssh/id_rsa ]; then
+	echo ">>> "
+	echo ">>> '$USER' does not have write access to their private .ssh/id_rsa key file."
+	echo ">>> Something is seriously wrong."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
+    if [ -f ~/.ssh/id_rsa.pub ]; then
+	echo ">>> "
+	echo ">>> '$USER' does not have write access to their public .ssh/id_rsa key.pub file."
+	echo ">>> Something is seriously wrong."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
     ssh-keygen -N "" -t rsa -f ~/.ssh/id_rsa
     kp="id_rsa"
 fi
@@ -89,6 +122,16 @@ if [ -z "${key_file}" ]; then
     key_file="id_scidb"
 fi
 # HARDCODE WHICH KEY (and which port) TO USE
+if [ -f ~/.ssh/config ]; then
+    if [ ! -w  ~/.ssh/config ]; then
+	echo ">>> "
+	echo ">>> '$USER' can not write to their ~/.ssh/config file."
+	echo ">>> Something is seriously wrong."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
+fi
 echo
 echo "$USER using password-less ssh key '${key_file}'."
 echo "Hardcoding this key for use with the hosts specified in the configuration file"
@@ -106,10 +149,46 @@ done < ${host_file}
 echo "# SciDB Installation" >> ~/.ssh/config
 #
 # Set permissions on files used in ~/.ssh
-if [ -f ~/.ssh/config ]; then chmod 600 ~/.ssh/config; fi
+if [ -f ~/.ssh/config ]; then
+    chmod 600 ~/.ssh/config
+    if [ $? -ne 0 ]; then
+	echo ">>> "
+	echo ">>> '$USER' can not change permissions on their .ssh/config file."
+	echo ">>> Something is seriously wrong."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
+fi
 chmod 600 ~/.ssh/${key_file}
+if [ $? -ne 0 ]; then
+    echo ">>> "
+    echo ">>> '$USER' can not change permissions on their private .ssh/${key_file} key file."
+    echo ">>> Something is seriously wrong."
+    echo ">>> Please fix and try again."
+    echo ">>> "
+    exit 1
+fi
 chmod 644 ~/.ssh/${key_file}.pub
+if [ $? -ne 0 ]; then
+    echo ">>> "
+    echo ">>> '$USER' can not change permissions on their public .ssh/${key_file}.pub key file."
+    echo ">>> Something is seriously wrong."
+    echo ">>> Please fix and try again."
+    echo ">>> "
+    exit 1
+fi
 #
 # Make an entry in the authorized_keys file
+if [ -f  ~/.ssh/authorized_keys ]; then
+    if [ ! -w  ~/.ssh/authorized_keys ]; then
+	echo ">>> "
+	echo ">>> '$USER' can not add to their ~/.ssh/authorized_keys file."
+	echo ">>> Something is seriously wrong."
+	echo ">>> Please fix and try again."
+	echo ">>> "
+	exit 1
+    fi
+fi
 cat ~/.ssh/${key_file}.pub >> ~/.ssh/authorized_keys
 chmod go-w ~/.ssh/authorized_keys
