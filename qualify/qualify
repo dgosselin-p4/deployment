@@ -315,9 +315,11 @@ done 3< ${host_file}
 #
 # Process the CheckPorts.log file
 #
-cp ${WORKING_DIR}/CheckPorts.log .
+awk '$2 == "GETADDRINFO" || $2 == "SOCKET" || $2 == "CONNECT" || $2 == "OK" {print}' ${WORKING_DIR}/CheckPorts.log > ${WORKING_DIR}/CheckPorts.tmp
+cat ${WORKING_DIR}/CheckPorts.tmp > ${WORKING_DIR}/CheckPorts.log
 sed -i -e '/OK/d' -e '/Connection refused/d' ${WORKING_DIR}/CheckPorts.log
 sed -i -e '/known hosts/d' ${WORKING_DIR}/CheckPorts.log
+cp ${WORKING_DIR}/CheckPorts.log .
 #
 # Was there a problem?
 #
