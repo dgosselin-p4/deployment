@@ -54,7 +54,6 @@ fi
 # Check .bash_profile is writable
 if [ ! -f ~/.bash_profile ]; then
     touch ~/.bash_profile
-    chown ${username} ~/.bash_profile
     chmod 755 ~/.bash_profile
 fi
 if [ ! -w ~/.bash_profile ]; then
