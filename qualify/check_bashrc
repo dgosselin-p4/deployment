@@ -19,6 +19,18 @@
 #
 # END_COPYRIGHT
 #
+################################################################
+# This script checks that a user's .bashrc and .bash_profile
+# are writable by that user.
+#
+# It is called from an ssh into a host as root
+# passed the user's name.
+#
+# While as root it changes permissions on this script
+# and the directory this script is in so that the user
+# can run it.
+# Then root su's as the user and runs this script.
+################################################################
 set -u
 #
 if [ `id -u` -eq 0 ]; then
