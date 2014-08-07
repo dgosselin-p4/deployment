@@ -158,8 +158,9 @@ fi
 # Run command on remote host (with some prepared scripts/files)
 # 1) copy ./deployment/common to remote host to /tmp/${username}/deployment
 # 2) (If) specified files would be copied to remote host to /tmp/${username}/deployment
-# 3) execute ${4} command on remote host
-# 4) remove /tmp/${username}/deployment from remote host
+# 3) Change permissions recursively so everyone has read and execute permission from /tmp/${username} on down.
+# 4) execute ${4} command on remote host
+# 5) remove /tmp/${username}/deployment from remote host
 function remote ()
 {
 local username=${1}
@@ -171,6 +172,7 @@ ${SCP} ${bin_path} ${username}@${hostname}:/tmp/${username}/deployment
 if [ -n "${files}" ]; then
     ${SCP} ${files} ${username}@${hostname}:/tmp/${username}/deployment
 fi;
+${SSH} ${username}@${hostname} "chmod -R a+rx /tmp/${username}"
 ${SSH} ${username}@${hostname} "cd /tmp/${username}/deployment && ${4}"
 ${SSH} ${username}@${hostname} "rm -rf /tmp/${username}/deployment"
 }
