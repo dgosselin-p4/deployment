@@ -26,6 +26,31 @@ SCIDB_VER="${1}"
 ORIG=~/.bashrc
 NEW=~/.bashrc.new
 
+# Check .bashrc is writable
+if [ ! -f ~/.bashrc ]; then
+    touch ~/.bashrc
+    chmod 755 ~/.bashrc
+fi
+if [ ! -w ~/.bashrc ]; then
+    echo ">>> "
+    echo ">>> User '$USER' on host '$HOSTNAME' can not write to their own .bashrc file."
+    echo ">>> Please fix and try again."
+    echo ">>> "
+    exit 1
+fi
+# Check .bash_profile is writable
+if [ ! -f ~/.bash_profile ]; then
+    touch ~/.bash_profile
+    chown ${username} ~/.bash_profile
+    chmod 755 ~/.bash_profile
+fi
+if [ ! -w ~/.bash_profile ]; then
+    echo ">>> "
+    echo ">>> User '$USER' on host '$HOSTNAME' can not write to their own .bash_profile file."
+    echo ">>> Please fix and try again."
+    echo ">>> "
+    exit 1
+fi
 if ! grep SCIDB_VER ${ORIG} ; then
     cp -p ${ORIG} ${NEW}
     # Ubunutu aparently has a 'return' command

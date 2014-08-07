@@ -201,34 +201,6 @@ else
 fi
 if [ $? -ne 0 ]; then exit 1; fi
 popd > /dev/null 2>&1
-# Check .bashrc is writable
-USER_BASHRC="$(eval echo ~${username})/.bashrc"
-if [ ! -f "$USER_BASHRC" ]; then
-    touch "$USER_BASHRC"
-    chown ${username} "$USER_BASHRC"
-    chmod 755 "$USER_BASHRC"
-fi
-if [ ! -w "$USER_BASHRC" ]; then
-    echo ">>> "
-    echo ">>> User '${username}' can not write to their own .bashrc file."
-    echo ">>> Please fix and try again."
-    echo ">>> "
-    exit 1
-fi
-# Check .bash_profile is writable
-USER_BASH_PROFILE="$(eval echo ~${username})/.bash_profile"
-if [ ! -f "$USER_BASH_PROFILE" ]; then
-    touch "$USER_BASH_PROFILE"
-    chown ${username} "$USER_BASH_PROFILE"
-    chmod 755 "$USER_BASH_PROFILE"
-fi
-if [ ! -w "$USER_BASH_PROFILE" ]; then
-    echo ">>> "
-    echo ">>> User '${username}' can not write to their own .bash_profile file."
-    echo ">>> Please fix and try again."
-    echo ">>> "
-    exit 1
-fi
 ################
 # HERE WE GO
 if [ ${installSciDB} -eq 1 ]; then
