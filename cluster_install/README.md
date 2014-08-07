@@ -23,9 +23,8 @@ The following prerequisites must be met before you can successfuly run the insta
 6. Install SciDB. See "./cluster_install -h" for details.
 7. exit    (Note: assume now you are the 'scidb' user, or whichever username you provided to cluster_install through the '-u' option.)
 8. source ~/.bashrc
-9. scidb.py initall cluster    (Note: this is to initialize the database.)
-10. scidb.py startall cluster   (Note: this is to start the server.)
-11. Do your work, e.g. to list SciDB instances: iquery list('instances')
-12. scidb.py stopall cluster   (Note: this is to stop the server.)
+9. scidb.py startall cluster   (Note: this is to start the server.)
+10. Do your work, e.g. to list SciDB instances: iquery list('instances')
+11. scidb.py stopall cluster   (Note: this is to stop the server.)
 
 Note: If you wish to use a previous installed version of SciDB, you must edit the SCIDB_VER variable in your .bashrc file and then source it.

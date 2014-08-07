@@ -34,12 +34,12 @@ function print_usage ()
     cat <<EOF
 
 ${0} [-s|-p <credentials>] [-u <username>] <network> <config_file>
-  -s         - install SciDB
+  -s         - install Community Edition
   -p <credentials>
-             - install P4
-               <credentials> is a file with one line of the credentials (<username>:<password>) used to access the P4 downloads.
+             - install Enterprise Edition Extensions
+               <credentials> is a file with one line of the credentials (<username>:<password>) used to access the Enterprise Edition downloads.
   -s -p <credentials>
-             - install both SciDB and P4
+             - install Enterprise Edition
   -u <username>
              - non-root user that will run SciDB
              - defaults to user "scidb"
@@ -162,9 +162,9 @@ if [ ${installSciDB} -eq 0 -a ${installP4} -eq 0 ];then
     echo
     echo "ERROR: Unknown installation type."
     echo "       You need to pick one:"
-    echo "         install SciDB (-s)"
-    echo "         install P4 (-p)"
-    echo "         install SciDB and P4 (-s -p)"
+    echo "         install Community Edition (-s)"
+    echo "         install Enterprise Edition Extensions (-p)"
+    echo "         install Enterprise Edition (-s -p)"
     print_usage
     exit 1
 fi
@@ -174,7 +174,7 @@ if [ ${installSciDB} -eq 0 -a ${installP4} -eq 1 ];then
     #
     if [ ! -d /opt/scidb/${version}/etc ]; then
 	echo
-	echo "You have elected to install P4 without installing SciDB."
+	echo "You have elected to install Enterprise Edition Extensions without installing SciDB."
 	echo "BUT there is no SciDB installation."
 	echo
 	echo -n "Would you like me to also install SciDB ? [y|n] "
@@ -183,7 +183,7 @@ if [ ${installSciDB} -eq 0 -a ${installP4} -eq 1 ];then
 	if [[ ${yes_no} =~ ^[yY] ]]; then
 	    installSciDB=1
 	else
-	    echo "There is no point in installing P4 without SciDB."
+	    echo "There is no point in installing Enterprise Edition Extensions without SciDB."
 	    echo "Exiting."
 	    exit 1
 	fi
@@ -221,7 +221,7 @@ fi
 if [ ${installP4} -eq 1 ];then
     echo
     echo '***************************************'
-    echo '* Installing P4 to the cluster hosts. *'
+    echo '* Installing Enterprise Edition Extensions to the cluster hosts. *'
     echo '***************************************'
     echo
     sleep ${NAPTIME}
