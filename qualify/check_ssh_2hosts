@@ -34,7 +34,7 @@ sshProblems=""
 while read -u3 host
 do
     echo "  Confirming ssh ${host} hostname"
-    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname > /dev/null
+    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes ${host} hostname > /dev/null 2>&1
     if [ $? -ne 0 ]; then
 	# Check that ssh port can connect
 	checkPortStatus=`${MYDIR}/check_port ${host} ${ssh_port} 2>&1`
