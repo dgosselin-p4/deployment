@@ -343,7 +343,8 @@ fi
 echo "...confirmed."
 ################################################################
 # CHECK THAT USER EXISTS ON ALL HOSTS
-# and with the same home directory.
+# and with the same home directory
+# and that their .bashrc is writable
 USER_HOME=$(eval echo ~${username})
 while read -u3 host
 do
