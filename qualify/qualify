@@ -368,7 +368,11 @@ do
     TEMPDIR=`ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host 'mktemp -d "/tmp/${USER}_qualify_XXXX"'`
     scp -q ${MYDIR}/check_bashrc $host:${TEMPDIR}
     ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "${TEMPDIR}/check_bashrc ${username}"
+    STATUS=$?
     ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "rm -rf ${TEMPDIR}"
+    if [ $STATUS -ne 0 ]; then
+	exit 1
+    fi
 done 3< ${host_file}
 ################################################################
 # CHECK SSH TO HOSTS AS ${username} ON COORDINATOR NODE

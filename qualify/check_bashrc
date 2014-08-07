@@ -22,6 +22,8 @@
 set -u
 #
 if [ `id -u` -eq 0 ]; then
+    chmod 755 $(dirname $0)
+    chmod 755 "$0"
     su -l $1 -c "$0"
     exit $?
 fi
