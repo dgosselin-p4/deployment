@@ -365,6 +365,10 @@ do
 	echo ">>> "
 	exit 1
     fi
+    TEMPDIR=`ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host 'mktemp -d "/tmp/${USER}_qualify_XXXX"'`
+    scp -q ${MYDIR}/check_bashrc $host:${TEMPDIR}
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "${TEMPDIR}/check_bashrc ${username}"
+    ssh -n -o StrictHostKeyChecking=no -o BatchMode=yes $host "rm -rf ${TEMPDIR}"
 done 3< ${host_file}
 ################################################################
 # CHECK SSH TO HOSTS AS ${username} ON COORDINATOR NODE
