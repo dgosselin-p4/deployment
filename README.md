@@ -34,17 +34,16 @@ Note: If you wish to use a previous installed version of SciDB, you must edit th
 ==================================================
 #### The deployment project itself features 2 tools for installing SciDB. ####
 
-<dl>
-<dt>[Recommended] cluster_install</dt>
-<dd>The standard way of installing SciDB to a cluster.</dd>
-<dt>[Not recommended] nrinstall</dt>
-<dd>Alternative way of installing SciDB, if you do not have root privilege on your machine.</dd>
-<dl>
-#### Installation ####
+1. cluster_install, which is the standard way of installing SciDB to a cluster.
+2. nrinstall, which is an alternative way of installing SciDB, if you do not have root privilege on your machine.
 
-To download this project for a particular release:
+Instructions on the use of cluster_install are above.
 
-1. Change 'branch:master' to 'tag:release'
+Instructions on the use of non-root install (nrinstall)
+can be found in the nrinstall subdirectory here on GitHub
+and in the nrinstall directory of the download you did above.
+
+#### To download this project for a particular release ####
+
+Change the above button 'branch:master' to 'tag:release'
   * where release is the SciDB release number, such as 14.7
-2. Click 'download' or directly download from https://github.com/Paradigm4/deployment/archive/_release_.zip
-3. Change to the directory of the tool your are interested in and look at the README file
