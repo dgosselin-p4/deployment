@@ -46,5 +46,5 @@ To download this project for a particular release:
 
 1. Change 'branch:master' to 'tag:release'
   * where release is the SciDB release number, such as 14.7
-2. Click 'download' or directly download from https://github.com/Paradigm4/deployment/archive/<release>.zip
+2. Click 'download' or directly download from https://github.com/Paradigm4/deployment/archive/_release_.zip
 3. Change to the directory of the tool your are interested in and look at the README file
