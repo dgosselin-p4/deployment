@@ -67,7 +67,7 @@ function print_ssh_problem ()
 #
 echo
 echo "Confirming 'ssh localhost hostname' works..."
-ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes localhost hostname > /dev/null
+ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes -o LogLevel=QUIET localhost hostname > /dev/null
 if [ $? -ne 0 ]; then
     echo ">>> "
     echo ">>> ssh to localhost did not work."
@@ -84,7 +84,7 @@ if [ $? -ne 0 ]; then
 	#  Try turning off SELinux
 	    setenforce 0
 	    echo ">>> Turning off SELinux and trying again."
-	    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes localhost hostname
+	    ssh -i ~/.ssh/${key_file} -n -o StrictHostKeyChecking=no -o BatchMode=yes -o LogLevel=QUIET localhost hostname
 	    if [ $? -ne 0 ]; then
 		setenforce 1
 		print_ssh_problem
