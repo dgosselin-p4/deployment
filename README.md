@@ -1,6 +1,7 @@
 #### Paradigm4's cluster installer for SciDB 14.7. ####
 
 It is used to install SciDB Community or Enterprise Edition on a cluster.
+
 ==================================================
 ##### Prerequisites #####
 
@@ -10,6 +11,7 @@ The following prerequisites must be met before you can successfuly run the insta
 * The coordinator node must have ssh connectivity to all the SciDB hosts (as listed in the configuration file).
 * This same user account must be on all SciDB hosts, each account@host with the same home directory (that is absolute pathname not same disk).
 * The same OS/version must be on all the SciDB hosts.
+
 ==================================================
 ##### Installation #####
 
@@ -28,6 +30,7 @@ The following prerequisites must be met before you can successfuly run the insta
 13. scidb.py stopall cluster   (Note: this is to stop the server.)
 
 Note: If you wish to use a previous installed version of SciDB, you must edit the SCIDB_VER variable in your .bashrc file and then source it.
+
 ==================================================
 #### The deployment project itself features 2 tools for installing SciDB. ####
 
