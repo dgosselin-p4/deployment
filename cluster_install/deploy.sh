@@ -252,8 +252,9 @@ function scidb_prepare_wcf ()
     local username="${1}"
     local password="${2}"
     local database=${3}
-    local coordinator=${4}
-    shift 4
+    local upgradeSciDB=${4}
+    local coordinator=${5}
+    shift 5
 
 
     # deposit config.ini to coordinator
@@ -262,7 +263,7 @@ function scidb_prepare_wcf ()
         # generate scidb environment for username
 	scidb_prepare_node "${username}" "${password}" ${hostname} # not ideal to modify the environment
     done;
-    remote root "" ${coordinator} "./scidb_prepare_coordinator.sh ${username} ${database} ${SCIDB_VER}" 
+    remote root "" ${coordinator} "./scidb_prepare_coordinator.sh ${username} ${database} ${SCIDB_VER} ${upgradeSciDB}" 
 }
 
 # Register released P4 repository on remote host
@@ -366,15 +367,16 @@ case ${1} in
 	done;
 	;;
     scidb_prepare_wcf)
-	if [ $# -lt 5 ]; then
+	if [ $# -lt 6 ]; then
 	    print_usage_exit 1
 	fi
         username=${2}
         password="${3}"
         database=${4}
-        coordinator=${5}
-        shift 5
-	scidb_prepare_wcf ${username} "${password}" ${database} ${coordinator} $@
+        upgradeSciDB=${5}
+        coordinator=${6}
+        shift 6
+	scidb_prepare_wcf ${username} "${password}" ${database} ${upgradeSciDB} ${coordinator} $@
 	;;
     p4_install_release)
 	if [ $# -lt 3 ]; then
